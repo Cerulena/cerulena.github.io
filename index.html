@@ -3,37 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liquid Glass Blog</title>
+    <title>PeaceQ - 兰心蕙质</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+    
     <style>
+        /* 字体定义 */
+        @font-face {
+            font-family: 'KaiTi';
+            src: local('KaiTi'), local('STKaiti'), local('BiauKai');
+        }
+        
+        @font-face {
+            font-family: 'YanZhenQing';
+            src: url('https://cdn.jsdelivr.net/npm/chinese-fonts@1.0.0/dist/颜体/颜体.ttf') format('truetype');
+            font-display: swap;
+        }
+
+        :root {
+            --primary: #007ba7;
+            --primary-light: #4da6c8;
+            --primary-dark: #005a7a;
+            --caramel-1: #f4e4c1;
+            --caramel-2: #e6d5b8;
+            --caramel-3: #d4c4a8;
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --shadow-light: rgba(255, 255, 255, 0.8);
+            --shadow-dark: rgba(0, 123, 167, 0.15);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        :root {
-            --bg-color: #e0e5ec;
-            --text-primary: #4a5568;
-            --text-secondary: #718096;
-            --accent: #667eea;
-            --accent-glow: rgba(102, 126, 234, 0.3);
-            --glass-bg: rgba(255, 255, 255, 0.25);
-            --glass-border: rgba(255, 255, 255, 0.4);
-            --shadow-light: #ffffff;
-            --shadow-dark: #a3b1c6;
-            --liquid-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg-color);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
+            font-family: 'KaiTi', 'STKaiti', serif;
+            background: linear-gradient(135deg, #f4e4c1 0%, #e6d5b8 50%, #d4c4a8 100%);
             min-height: 100vh;
+            color: #2c3e50;
+            overflow-x: hidden;
         }
 
-        /* 动态液体背景 */
+        /* 水液玻璃背景动画 */
         .liquid-bg {
             position: fixed;
             top: 0;
@@ -42,157 +59,228 @@
             height: 100%;
             z-index: -1;
             overflow: hidden;
+            pointer-events: none;
         }
 
         .blob {
             position: absolute;
             border-radius: 50%;
             filter: blur(80px);
-            opacity: 0.6;
-            animation: float 20s infinite ease-in-out;
+            opacity: 0.4;
+            animation: float 25s infinite ease-in-out;
         }
 
         .blob-1 {
-            width: 400px;
-            height: 400px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            top: -100px;
-            left: -100px;
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(45deg, #007ba7, #4da6c8);
+            top: -200px;
+            left: -200px;
             animation-delay: 0s;
         }
 
         .blob-2 {
-            width: 300px;
-            height: 300px;
-            background: linear-gradient(45deg, #f093fb, #f5576c);
-            top: 50%;
-            right: -50px;
-            animation-delay: -5s;
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(45deg, #e6d5b8, #d4c4a8);
+            top: 40%;
+            right: -100px;
+            animation-delay: -8s;
         }
 
         .blob-3 {
-            width: 350px;
-            height: 350px;
-            background: linear-gradient(45deg, #4facfe, #00f2fe);
-            bottom: -100px;
-            left: 30%;
-            animation-delay: -10s;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(45deg, #007ba7, #f4e4c1);
+            bottom: -200px;
+            left: 20%;
+            animation-delay: -15s;
         }
 
         @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
+            0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            33% { transform: translate(50px, -80px) scale(1.1) rotate(120deg); }
+            66% { transform: translate(-30px, 40px) scale(0.9) rotate(240deg); }
         }
 
-        /* 布局 */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 30px;
-        }
-
-        /* 侧边栏 - 拟态效果 */
-        .sidebar {
-            position: sticky;
-            top: 20px;
-            height: fit-content;
-        }
-
-        .profile-card {
-            background: var(--bg-color);
-            border-radius: 30px;
-            padding: 30px;
-            text-align: center;
-            /* 拟态凸起效果 */
+        /* 标题栏样式 - 毛玻璃+拟态 */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
             box-shadow: 
-                20px 20px 60px var(--shadow-dark),
-                -20px -20px 60px var(--shadow-light);
-            margin-bottom: 30px;
+                0 4px 30px rgba(0, 123, 167, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .header.hidden-header {
+            transform: translateY(-100%);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Logo区域 - 拟态 */
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 20px;
+            border-radius: 50px;
+            background: linear-gradient(145deg, #f4e4c1, #e6d5b8);
+            box-shadow: 
+                5px 5px 15px rgba(0, 123, 167, 0.1),
+                -5px -5px 15px rgba(255, 255, 255, 0.8);
+            cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        .profile-card:hover {
-            transform: translateY(-5px);
+        .logo:hover {
+            transform: translateY(-2px);
             box-shadow: 
-                25px 25px 70px var(--shadow-dark),
-                -25px -25px 70px var(--shadow-light);
+                8px 8px 20px rgba(0, 123, 167, 0.15),
+                -8px -8px 20px rgba(255, 255, 255, 0.9);
         }
 
-        .avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            background: var(--liquid-bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            color: white;
-            /* 内凹拟态 */
-            box-shadow: 
-                inset 5px 5px 10px rgba(0,0,0,0.1),
-                inset -5px -5px 10px rgba(255,255,255,0.3);
+        .logo svg {
+            width: 40px;
+            height: 40px;
+            stroke: var(--primary);
+            fill: none;
+            stroke-width: 1.5;
         }
 
-        .profile-name {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: var(--text-primary);
-        }
-
-        .profile-bio {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 20px;
+        .logo-text {
+            font-family: 'YanZhenQing', 'KaiTi', serif;
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: bold;
+            letter-spacing: 0.1em;
         }
 
         /* 导航菜单 */
-        .nav-menu {
+        .nav {
+            display: flex;
+            gap: 2rem;
             list-style: none;
         }
 
         .nav-item {
-            margin-bottom: 15px;
+            position: relative;
         }
 
         .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 15px 20px;
-            border-radius: 15px;
             text-decoration: none;
-            color: var(--text-secondary);
-            font-weight: 500;
+            color: #2c3e50;
+            font-size: 1.1rem;
+            padding: 10px 20px;
+            border-radius: 30px;
             transition: all 0.3s ease;
-            cursor: pointer;
-            /* 拟态扁平 */
-            background: var(--bg-color);
-            box-shadow: 
-                5px 5px 10px var(--shadow-dark),
-                -5px -5px 10px var(--shadow-light);
-        }
-
-        .nav-link:hover, .nav-link.active {
-            color: var(--accent);
-            box-shadow: 
-                inset 5px 5px 10px var(--shadow-dark),
-                inset -5px -5px 10px var(--shadow-light);
+            position: relative;
+            display: block;
         }
 
         .nav-link::before {
-            content: attr(data-icon);
-            font-size: 18px;
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 30px;
+            background: linear-gradient(145deg, #f4e4c1, #e6d5b8);
+            box-shadow: 
+                3px 3px 8px rgba(0, 123, 167, 0.1),
+                -3px -3px 8px rgba(255, 255, 255, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: -1;
         }
 
-        /* 主内容区 */
-        .main-content {
+        .nav-link:hover::before,
+        .nav-link.active::before {
+            opacity: 1;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* 搜索输入框样式 */
+        .input-container {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .input-container input {
+            width: 100%;
+            padding: 12px 0;
+            font-size: 16px;
+            color: #2c3e50;
+            border: none;
+            border-bottom: 2px solid rgba(0, 123, 167, 0.2);
+            outline: none;
+            background: transparent;
+            font-family: 'KaiTi', serif;
+            transition: border-color 0.3s;
+        }
+
+        .input-container input:focus {
+            border-bottom-color: var(--primary);
+        }
+
+        .input-container label {
+            position: absolute;
+            top: 12px;
+            left: 0;
+            font-size: 16px;
+            color: rgba(0, 123, 167, 0.5);
+            pointer-events: none;
+            transition: 0.3s ease all;
+        }
+
+        .input-container input:focus ~ label,
+        .input-container input:valid ~ label {
+            top: -20px;
+            font-size: 12px;
+            color: var(--primary);
+        }
+
+        .underline {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            width: 0;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .input-container input:focus ~ .underline {
+            width: 100%;
+        }
+
+        /* 主布局 */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 100px 20px 40px;
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 30px;
             min-height: 100vh;
         }
 
@@ -203,251 +291,488 @@
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: 24px;
-            padding: 40px;
-            margin-bottom: 30px;
+            padding: 30px;
             box-shadow: 
-                0 8px 32px 0 rgba(31, 38, 135, 0.1),
+                0 8px 32px rgba(0, 123, 167, 0.1),
                 inset 0 0 0 1px rgba(255, 255, 255, 0.6);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .glass-card:hover {
-            transform: translateY(-5px) scale(1.01);
             box-shadow: 
-                0 20px 60px rgba(31, 38, 135, 0.15),
+                0 12px 40px rgba(0, 123, 167, 0.15),
                 inset 0 0 0 1px rgba(255, 255, 255, 0.8);
         }
 
-        /* 水液玻璃效果标题 */
-        .liquid-title {
-            font-size: 48px;
-            font-weight: 800;
-            background: var(--liquid-bg);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 20px;
-            position: relative;
-            display: inline-block;
-        }
-
-        .liquid-title::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: var(--liquid-bg);
-            border-radius: 2px;
-            opacity: 0.3;
-        }
-
         /* 文章列表 */
-        .post-list {
+        .article-list {
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
 
-        .post-item {
+        .article-item {
             background: rgba(255, 255, 255, 0.4);
             border-radius: 20px;
             padding: 25px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.5);
             position: relative;
             overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .post-item::before {
+        .article-item::before {
             content: '';
             position: absolute;
             top: 0;
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transition: left 0.5s;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            transition: left 0.6s;
         }
 
-        .post-item:hover::before {
+        .article-item:hover::before {
             left: 100%;
         }
 
-        .post-item:hover {
+        .article-item:hover {
             background: rgba(255, 255, 255, 0.6);
-            transform: translateX(10px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transform: translateX(10px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 123, 167, 0.15);
         }
 
-        .post-date {
-            font-size: 12px;
-            color: var(--accent);
-            font-weight: 600;
+        .article-content {
+            flex: 1;
+        }
+
+        .article-title {
+            font-family: 'YanZhenQing', 'KaiTi', serif;
+            font-size: 1.5rem;
+            color: var(--primary-dark);
             margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-weight: bold;
         }
 
-        .post-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: var(--text-primary);
-        }
-
-        .post-excerpt {
-            font-size: 14px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        .post-tags {
-            display: flex;
-            gap: 8px;
-            margin-top: 15px;
-        }
-
-        .tag {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            background: rgba(102, 126, 234, 0.1);
-            color: var(--accent);
-            border: 1px solid rgba(102, 126, 234, 0.2);
-        }
-
-        /* Markdown 内容样式 */
-        .markdown-body {
-            line-height: 1.8;
-            color: var(--text-primary);
-        }
-
-        .markdown-body h1 {
-            font-size: 36px;
-            margin-bottom: 30px;
-            color: var(--text-primary);
-            position: relative;
-            padding-bottom: 15px;
-        }
-
-        .markdown-body h1::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 60px;
-            height: 4px;
-            background: var(--liquid-bg);
-            border-radius: 2px;
-        }
-
-        .markdown-body h2 {
-            font-size: 28px;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            color: var(--text-primary);
-        }
-
-        .markdown-body h3 {
-            font-size: 22px;
-            margin-top: 30px;
-            margin-bottom: 15px;
-        }
-
-        .markdown-body p {
-            margin-bottom: 20px;
-            font-size: 16px;
-            color: var(--text-secondary);
-        }
-
-        .markdown-body code {
-            background: rgba(102, 126, 234, 0.1);
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 14px;
-            color: var(--accent);
-        }
-
-        .markdown-body pre {
-            background: rgba(30, 30, 30, 0.05);
-            border-radius: 16px;
-            padding: 20px;
-            overflow-x: auto;
-            margin: 20px 0;
-            border: 1px solid rgba(255,255,255,0.3);
-            backdrop-filter: blur(10px);
-        }
-
-        .markdown-body pre code {
-            background: transparent;
-            color: var(--text-primary);
-            padding: 0;
-        }
-
-        .markdown-body blockquote {
-            border-left: 4px solid var(--accent);
-            padding-left: 20px;
-            margin: 20px 0;
-            color: var(--text-secondary);
+        .article-subtitle {
+            font-size: 1rem;
+            color: #5a6c7d;
             font-style: italic;
-            background: rgba(102, 126, 234, 0.05);
-            padding: 20px 20px 20px 30px;
-            border-radius: 0 12px 12px 0;
         }
 
-        .markdown-body img {
-            max-width: 100%;
-            border-radius: 16px;
-            margin: 20px 0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .markdown-body ul, .markdown-body ol {
+        .article-date {
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: 600;
+            padding: 8px 16px;
+            background: rgba(0, 123, 167, 0.1);
+            border-radius: 20px;
+            white-space: nowrap;
             margin-left: 20px;
-            margin-bottom: 20px;
         }
 
-        .markdown-body li {
+        /* 侧边栏 */
+        .sidebar {
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        /* 格言展示 */
+        .proverb-box {
+            background: linear-gradient(135deg, rgba(0, 123, 167, 0.1), rgba(244, 228, 193, 0.3));
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(0, 123, 167, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .proverb-box::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            font-size: 80px;
+            color: rgba(0, 123, 167, 0.1);
+            font-family: Georgia, serif;
+        }
+
+        .proverb-text {
+            font-family: 'KaiTi', serif;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #2c3e50;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 40px;
+            padding: 20px;
+        }
+
+        .page-btn {
+            padding: 10px 18px;
+            border: none;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--primary);
+            font-family: 'KaiTi', serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+            box-shadow: 
+                3px 3px 8px rgba(0, 123, 167, 0.1),
+                -3px -3px 8px rgba(255, 255, 255, 0.8);
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: rgba(0, 123, 167, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .page-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: inset 3px 3px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 文章内容页 */
+        .article-full {
+            display: none;
+        }
+
+        .article-full.active {
+            display: block;
+        }
+
+        .article-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(0, 123, 167, 0.2);
+        }
+
+        .article-full-title {
+            font-family: 'YanZhenQing', serif;
+            font-size: 2.5rem;
+            color: var(--primary-dark);
             margin-bottom: 10px;
-            color: var(--text-secondary);
         }
 
-        .markdown-body a {
-            color: var(--accent);
-            text-decoration: none;
-            border-bottom: 2px solid transparent;
-            transition: border-color 0.3s;
+        .article-meta {
+            color: #5a6c7d;
+            font-size: 0.95rem;
         }
 
-        .markdown-body a:hover {
-            border-bottom-color: var(--accent);
-        }
-
-        /* 返回按钮 */
         .back-btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 20px;
             padding: 10px 20px;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.3);
-            border: 1px solid rgba(255,255,255,0.4);
-            color: var(--text-primary);
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            color: var(--primary);
             cursor: pointer;
+            font-family: 'KaiTi', serif;
+            font-size: 1rem;
             transition: all 0.3s;
-            font-size: 14px;
-            font-weight: 500;
+            box-shadow: 
+                3px 3px 8px rgba(0, 123, 167, 0.1),
+                -3px -3px 8px rgba(255, 255, 255, 0.8);
         }
 
         .back-btn:hover {
-            background: rgba(255,255,255,0.5);
             transform: translateX(-5px);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Markdown内容样式 */
+        .markdown-body {
+            line-height: 1.8;
+            color: #2c3e50;
+        }
+
+        .markdown-body h1, 
+        .markdown-body h2, 
+        .markdown-body h3 {
+            font-family: 'YanZhenQing', 'KaiTi', serif;
+            color: var(--primary-dark);
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        .markdown-body h1 { font-size: 2rem; border-bottom: 2px solid rgba(0, 123, 167, 0.2); padding-bottom: 10px; }
+        .markdown-body h2 { font-size: 1.6rem; }
+        .markdown-body h3 { font-size: 1.3rem; }
+
+        .markdown-body p {
+            margin-bottom: 20px;
+            text-align: justify;
+            text-indent: 2em;
+        }
+
+        .markdown-body code {
+            background: rgba(0, 123, 167, 0.1);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: 'Consolas', monospace;
+            color: var(--primary);
+        }
+
+        .markdown-body pre {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 16px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .markdown-body pre code {
+            background: transparent;
+            padding: 0;
+        }
+
+        .markdown-body blockquote {
+            border-left: 4px solid var(--primary);
+            padding: 15px 20px;
+            margin: 20px 0;
+            background: rgba(0, 123, 167, 0.05);
+            border-radius: 0 12px 12px 0;
+            font-style: italic;
+        }
+
+        .markdown-body img {
+            max-width: 100%;
+            border-radius: 16px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0, 123, 167, 0.2);
+        }
+
+        .markdown-body ul, 
+        .markdown-body ol {
+            margin-left: 2em;
+            margin-bottom: 20px;
+        }
+
+        .markdown-body li {
+            margin-bottom: 8px;
+        }
+
+        .markdown-body a {
+            color: var(--primary);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--primary);
+            transition: all 0.3s;
+        }
+
+        .markdown-body a:hover {
+            border-bottom-style: solid;
+            background: rgba(0, 123, 167, 0.1);
+        }
+
+        /* 搜索界面 */
+        .search-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(244, 228, 193, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 15vh;
+        }
+
+        .search-overlay.active {
+            display: flex;
+        }
+
+        .search-container {
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .search-input-large {
+            width: 100%;
+            padding: 20px 30px;
+            font-size: 1.5rem;
+            border: none;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.6);
+            box-shadow: 
+                10px 10px 30px rgba(0, 123, 167, 0.1),
+                -10px -10px 30px rgba(255, 255, 255, 0.8);
+            font-family: 'KaiTi', serif;
+            color: var(--primary-dark);
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-input-large:focus {
+            box-shadow: 
+                15px 15px 40px rgba(0, 123, 167, 0.15),
+                -15px -15px 40px rgba(255, 255, 255, 0.9);
+        }
+
+        .search-results {
+            margin-top: 30px;
+            width: 100%;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .close-search {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--primary);
+            box-shadow: 
+                5px 5px 15px rgba(0, 123, 167, 0.1),
+                -5px -5px 15px rgba(255, 255, 255, 0.8);
+            transition: all 0.3s;
+        }
+
+        .close-search:hover {
+            transform: rotate(90deg);
+        }
+
+        /* 标签云 */
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .tag {
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.4);
+            color: var(--primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(0, 123, 167, 0.2);
+        }
+
+        .tag:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: relative;
+                top: 0;
+                max-height: none;
+                order: -1;
+            }
+            
+            .nav {
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 0.8rem 1rem;
+            }
+            
+            .logo-text {
+                font-size: 1.2rem;
+            }
+            
+            .nav {
+                gap: 0.5rem;
+            }
+            
+            .nav-link {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .main-container {
+                padding: 80px 15px 30px;
+            }
+            
+            .article-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .article-date {
+                margin-left: 0;
+                align-self: flex-end;
+            }
+            
+            .article-full-title {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-content {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .nav {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .pagination {
+                flex-wrap: wrap;
+            }
         }
 
         /* 加载动画 */
@@ -461,8 +786,8 @@
         .loader-circle {
             width: 50px;
             height: 50px;
-            border: 3px solid rgba(102, 126, 234, 0.1);
-            border-top-color: var(--accent);
+            border: 3px solid rgba(0, 123, 167, 0.1);
+            border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -471,488 +796,609 @@
             to { transform: rotate(360deg); }
         }
 
-        /* 文件上传区域 */
-        .upload-zone {
-            border: 2px dashed rgba(102, 126, 234, 0.3);
-            border-radius: 20px;
-            padding: 40px;
+        /* 首页特殊样式 */
+        .hero-section {
             text-align: center;
-            background: rgba(255,255,255,0.2);
-            transition: all 0.3s;
+            padding: 60px 20px;
+            margin-bottom: 40px;
+        }
+
+        .hero-title {
+            font-family: 'YanZhenQing', serif;
+            font-size: 3.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 123, 167, 0.1);
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: #5a6c7d;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .featured-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+
+        .featured-card {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.4s;
+            border: 1px solid rgba(255, 255, 255, 0.6);
             cursor: pointer;
         }
 
-        .upload-zone:hover {
-            border-color: var(--accent);
-            background: rgba(255,255,255,0.4);
+        .featured-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 40px rgba(0, 123, 167, 0.15);
         }
 
-        .upload-zone.dragover {
-            border-color: var(--accent);
-            background: rgba(102, 126, 234, 0.1);
-            transform: scale(1.02);
-        }
-
-        /* 响应式 */
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-            
-            .sidebar {
-                position: relative;
-                top: 0;
-            }
-            
-            .liquid-title {
-                font-size: 32px;
-            }
-        }
-
-        /* 隐藏类 */
-        .hidden {
-            display: none !important;
-        }
-
-        /* 滚动条美化 */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(102, 126, 234, 0.3);
-            border-radius: 5px;
-            border: 2px solid transparent;
-            background-clip: content-box;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(102, 126, 234, 0.5);
+        .featured-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 123, 167, 0.3);
         }
     </style>
 </head>
 <body>
-    <!-- 液体背景 -->
+    <!-- 水液玻璃背景 -->
     <div class="liquid-bg">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
         <div class="blob blob-3"></div>
     </div>
 
-    <div class="container">
-        <!-- 侧边栏 -->
-        <aside class="sidebar">
-            <div class="profile-card">
-                <div class="avatar">✦</div>
-                <h1 class="profile-name">Liquid Blog</h1>
-                <p class="profile-bio">毛玻璃 · 拟态 · 水液玻璃</p>
+    <!-- 标题栏 -->
+    <header class="header" id="header">
+        <div class="header-content">
+            <div class="logo" onclick="showHome()">
+                <!-- 兰花SVG线稿 -->
+                <svg viewBox="0 0 100 100">
+                    <!-- 花瓣 -->
+                    <path d="M50 20 Q30 40 35 60 Q50 55 50 20" stroke-linecap="round"/>
+                    <path d="M50 20 Q70 40 65 60 Q50 55 50 20" stroke-linecap="round"/>
+                    <path d="M50 60 Q30 70 25 50 Q40 55 50 60" stroke-linecap="round"/>
+                    <path d="M50 60 Q70 70 75 50 Q60 55 50 60" stroke-linecap="round"/>
+                    <!-- 花蕊 -->
+                    <circle cx="50" cy="45" r="3"/>
+                    <!-- 茎 -->
+                    <path d="M50 60 Q50 80 45 90" stroke-linecap="round"/>
+                    <path d="M50 75 Q60 70 65 75" stroke-linecap="round"/>
+                    <path d="M48 82 Q40 85 38 80" stroke-linecap="round"/>
+                </svg>
+                <span class="logo-text">PeaceQ</span>
             </div>
-
+            
             <nav>
-                <ul class="nav-menu">
+                <ul class="nav">
                     <li class="nav-item">
-                        <a class="nav-link active" data-icon="🏠" onclick="showHome()">首页文章</a>
+                        <a class="nav-link active" onclick="showHome()">首页</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-icon="📁" onclick="document.getElementById('fileInput').click()">本地Markdown</a>
-                        <input type="file" id="fileInput" accept=".md,.markdown,.txt" style="display: none;" onchange="handleFileSelect(event)">
+                        <a class="nav-link" onclick="showArticles()">文章</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-icon="ℹ️" onclick="showAbout()">关于</a>
+                        <a class="nav-link" onclick="showEssays()">随笔</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="openSearch()">🔍</a>
                     </li>
                 </ul>
             </nav>
-        </aside>
+        </div>
+    </header>
 
-        <!-- 主内容 -->
-        <main class="main-content">
-            <!-- 首页文章列表 -->
-            <div id="home-view" class="glass-card">
-                <h1 class="liquid-title">最新文章</h1>
-                <div class="post-list" id="post-list">
-                    <!-- 文章列表由JS生成 -->
-                </div>
-            </div>
+    <!-- 搜索界面 -->
+    <div class="search-overlay" id="searchOverlay">
+        <button class="close-search" onclick="closeSearch()">✕</button>
+        <div class="search-container">
+            <input type="text" class="search-input-large" id="globalSearch" placeholder="搜索文章..." oninput="performSearch(this.value)">
+            <div class="search-results" id="searchResults"></div>
+        </div>
+    </div>
 
-            <!-- 文章详情页 -->
-            <div id="post-view" class="glass-card hidden">
-                <button class="back-btn" onclick="showHome()">← 返回列表</button>
-                <article class="markdown-body" id="post-content">
-                    <!-- Markdown内容 -->
-                </article>
-            </div>
-
-            <!-- 关于页面 -->
-            <div id="about-view" class="glass-card hidden">
-                <h1 class="liquid-title">关于</h1>
-                <div class="markdown-body">
-                    <p>这是一个融合三种现代设计风格的静态博客：</p>
-                    <ul>
-                        <li><strong>毛玻璃效果 (Glassmorphism)</strong>：半透明背景配合背景模糊，创造层次感</li>
-                        <li><strong>拟态设计 (Neumorphism)</strong>：柔和的阴影和高光，创造触觉般的凸起和凹陷感</li>
-                        <li><strong>水液玻璃 (Liquid Glass)</strong>：流动的渐变背景，带来有机的生命力</li>
-                    </ul>
-                    <p>支持直接拖拽或选择本地 Markdown 文件进行预览。</p>
-                </div>
-            </div>
-
-            <!-- 本地文件预览 -->
-            <div id="local-view" class="glass-card hidden">
-                <button class="back-btn" onclick="showHome()">← 返回列表</button>
-                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-                    <div style="font-size: 48px; margin-bottom: 15px;">📄</div>
-                    <h3 style="margin-bottom: 10px; color: var(--text-primary);">点击或拖拽 Markdown 文件</h3>
-                    <p style="color: var(--text-secondary); font-size: 14px;">支持 .md .markdown .txt 格式</p>
-                </div>
-                <article class="markdown-body hidden" id="local-content" style="margin-top: 30px;"></article>
-            </div>
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧内容区 -->
+        <main class="content-area" id="contentArea">
+            <!-- 动态内容加载区 -->
         </main>
+
+        <!-- 右侧边栏 -->
+        <aside class="sidebar glass-card" id="sidebar">
+            <!-- 搜索框（文章/随笔页显示） -->
+            <div class="input-container" id="sidebarSearch" style="margin-bottom: 25px; display: none;">
+                <input type="text" id="sidebarInput" required oninput="filterCurrentList(this.value)">
+                <label for="sidebarInput" class="label">搜索</label>
+                <div class="underline"></div>
+            </div>
+
+            <!-- 格言展示区（首页显示） -->
+            <div class="proverb-box" id="proverbBox">
+                <p class="proverb-text" id="proverbText">正在加载...</p>
+            </div>
+
+            <!-- 文章结构/标签 -->
+            <div id="sidebarContent">
+                <h3 style="font-family: 'YanZhenQing', serif; color: var(--primary-dark); margin-bottom: 15px; font-size: 1.3rem;">标签云</h3>
+                <div class="tag-cloud" id="tagCloud">
+                    <span class="tag">哲学</span>
+                    <span class="tag">生活</span>
+                    <span class="tag">技术</span>
+                    <span class="tag">艺术</span>
+                    <span class="tag">随笔</span>
+                </div>
+            </div>
+        </aside>
     </div>
 
     <script>
-        // 简单的 Markdown 解析器
-        class MarkdownParser {
-            static parse(text) {
-                // 转义HTML
-                text = text.replace(/&/g, '&amp;')
-                          .replace(/</g, '&lt;')
-                          .replace(/>/g, '&gt;');
+        // 全局状态
+        let currentPage = 1;
+        let articlesPerPage = 20;
+        let allArticles = [];
+        let allEssays = [];
+        let currentView = 'home';
+        let lastScrollY = 0;
+        let headerHidden = false;
 
-                // 代码块（必须在行内代码之前处理）
-                text = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
-                    return `<pre><code>${code.trim()}</code></pre>`;
-                });
+        // 模拟数据（实际项目中应从assets文件夹读取）
+        const mockArticles = [
+            { name: "静水流深", subtitle: "论沉默的力量与智慧", time: "2024-01-15", type: "article" },
+            { name: "兰心蕙质", subtitle: "君子之德的现代诠释", time: "2024-01-12", type: "article" },
+            { name: "墨染流年", subtitle: "书法与人生的隐喻", time: "2024-01-10", type: "article" },
+            { name: "云水禅心", subtitle: "禅宗思想在当下的意义", time: "2024-01-08", type: "article" },
+            { name: "风骨", subtitle: "论文人的气节与坚守", time: "2024-01-05", type: "article" },
+            { name: "月白风清", subtitle: "自然审美与心灵净化", time: "2024-01-03", type: "article" },
+            { name: "琴瑟和鸣", subtitle: "和谐关系的艺术", time: "2023-12-28", type: "article" },
+            { name: "墨香", subtitle: "传统书写文化的消逝与重生", time: "2023-12-25", type: "article" },
+            { name: "竹影", subtitle: "虚怀若谷的处世哲学", time: "2023-12-20", type: "article" },
+            { name: "茶香", subtitle: "一盏清茗中的禅意", time: "2023-12-18", type: "article" },
+            { name: "山水", subtitle: "中国画的意境之美", time: "2023-12-15", type: "article" },
+            { name: "诗韵", subtitle: "古典诗词的现代回响", time: "2023-12-12", type: "article" },
+            { name: "棋道", subtitle: "博弈中的智慧与人生", time: "2023-12-10", type: "article" },
+            { name: "花语", subtitle: "花卉象征的文化解读", time: "2023-12-08", type: "article" },
+            { name: "书香", subtitle: "阅读作为一种生活方式", time: "2023-12-05", type: "article" },
+            { name: "墨韵", subtitle: "水墨艺术的当代价值", time: "2023-12-03", type: "article" },
+            { name: "禅意", subtitle: "东方智慧的现代转化", time: "2023-12-01", type: "article" },
+            { name: "雅集", subtitle: "文人聚会的文化意义", time: "2023-11-28", type: "article" },
+            { name: "清欢", subtitle: "简单生活的哲学", time: "2023-11-25", type: "article" },
+            { name: "素笺", subtitle: "书信时代的情感表达", time: "2023-11-22", type: "article" },
+            { name: "幽兰", subtitle: "隐士文化的精神内核", time: "2023-11-20", type: "article" },
+            { name: "听雨", subtitle: "自然声响中的诗意", time: "2023-11-18", type: "article" }
+        ];
 
-                // 标题
-                text = text.replace(/^###### (.*$)/gim, '<h6>$1</h6>');
-                text = text.replace(/^##### (.*$)/gim, '<h5>$1</h5>');
-                text = text.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
-                text = text.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-                text = text.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-                text = text.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+        const mockEssays = [
+            { name: "晨起", time: "2024-01-15", type: "essay" },
+            { name: "夜读", time: "2024-01-14", type: "essay" },
+            { name: "散步", time: "2024-01-13", type: "essay" },
+            { name: "观云", time: "2024-01-12", type: "essay" },
+            { name: "听雨", time: "2024-01-11", type: "essay" }
+        ];
 
-                // 粗体和斜体
-                text = text.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
-                text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-                text = text.replace(/___(.*?)___/g, '<strong><em>$1</em></strong>');
-                text = text.replace(/__(.*?)__/g, '<strong>$1</strong>');
-                text = text.replace(/_(.*?)_/g, '<em>$1</em>');
+        const mockProverbs = [
+            "非淡泊无以明志，非宁静无以致远。",
+            "兰生幽谷，不为莫服而不芳。",
+            "上善若水，水善利万物而不争。",
+            "大音希声，大象无形。",
+            "知人者智，自知者明。",
+            "慎终如始，则无败事。",
+            "祸兮福之所倚，福兮祸之所伏。",
+            "合抱之木，生于毫末；九层之台，起于累土。",
+            "道可道，非常道；名可名，非常名。",
+            "天地有大美而不言。"
+        ];
 
-                // 行内代码
-                text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProverb();
+            showHome();
+            setupScrollListener();
+            
+            // 模拟加载本地文件
+            allArticles = [...mockArticles];
+            allEssays = [...mockEssays];
+        });
 
-                // 引用块
-                text = text.replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>');
-                text = text.replace(/(<blockquote>.*<\/blockquote>\n?)+/g, (match) => {
-                    return match.replace(/<\/blockquote>\n<blockquote>/g, '<br>');
-                });
+        // 滚动监听（标题栏显隐）
+        function setupScrollListener() {
+            let ticking = false;
+            
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    window.requestAnimationFrame(() => {
+                        const currentScrollY = window.scrollY;
+                        const header = document.getElementById('header');
+                        
+                        if (currentScrollY > lastScrollY && currentScrollY > 100 && !headerHidden) {
+                            header.classList.add('hidden-header');
+                            headerHidden = true;
+                        } else if (currentScrollY < lastScrollY && headerHidden) {
+                            header.classList.remove('hidden-header');
+                            headerHidden = false;
+                        }
+                        
+                        lastScrollY = currentScrollY;
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+        }
 
-                // 链接
-                text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-
-                // 图片
-                text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
-
-                // 无序列表
-                text = text.replace(/^\- (.*$)/gim, '<li>$1</li>');
-                text = text.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
-                text = text.replace(/<\/ul>\n<ul>/g, '');
-
-                // 有序列表
-                text = text.replace(/^\d+\. (.*$)/gim, '<li>$1</li>');
-                text = text.replace(/(<li>.*<\/li>\n?)+/g, (match, offset, string) => {
-                    // 检查是否已经被包裹在ul中
-                    if (string.lastIndexOf('<ul>', offset) > string.lastIndexOf('</ul>', offset)) {
-                        return match;
-                    }
-                    return `<ol>${match}</ol>`;
-                });
-
-                // 分隔线
-                text = text.replace(/^---$/gim, '<hr>');
-
-                // 段落（最后处理）
-                text = text.split('\n\n').map(block => {
-                    if (!block.trim()) return '';
-                    if (block.startsWith('<')) return block;
-                    return `<p>${block.replace(/\n/g, '<br>')}</p>`;
-                }).join('\n');
-
-                return text;
+        // 加载格言
+        async function loadProverb() {
+            try {
+                // 实际项目中应读取 assets/proverb.txt
+                // const response = await fetch('assets/proverb.txt');
+                // const text = await response.text();
+                // const proverbs = text.split('\n').filter(line => line.trim());
+                // const random = proverbs[Math.floor(Math.random() * proverbs.length)];
+                
+                const random = mockProverbs[Math.floor(Math.random() * mockProverbs.length)];
+                document.getElementById('proverbText').textContent = random;
+            } catch (e) {
+                document.getElementById('proverbText').textContent = "宁静致远，淡泊明志。";
             }
         }
 
-        // 示例文章数据
-        const posts = [
-            {
-                id: 1,
-                title: "探索玻璃拟态设计的艺术",
-                date: "2024-01-15",
-                excerpt: "玻璃拟态（Glassmorphism）通过背景模糊、半透明层级和鲜艳色彩，创造出富有深度和现代感的界面设计...",
-                tags: ["设计", "UI"],
-                content: `# 探索玻璃拟态设计的艺术
-
-玻璃拟态（Glassmorphism）是近年来最流行的设计趋势之一，其核心特征包括：
-
-## 核心特点
-
-- **透明度**：使用半透明背景（通常 rgba(255,255,255,0.25)）
-- **背景模糊**：backdrop-filter: blur(20px) 创造磨砂玻璃效果
-- **细微边框**：1px 的半透明白色边框增强玻璃感
-- **鲜艳背景**：需要色彩丰富的背景才能展现效果
-
-## 代码示例
-
-\`\`\`css
-.glass {
-    background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 24px;
-}
-\`\`\`
-
-> "好的设计是尽可能少的设计" —— Dieter Rams
-
-## 应用场景
-
-玻璃拟态特别适合：
-- 模态框和弹出层
-- 导航栏
-- 卡片式布局
-- 仪表盘界面
-
-![Glass Example](https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800)
-
-这种设计风格在 iOS、Windows 11 等现代操作系统中得到了广泛应用。`
-            },
-            {
-                id: 2,
-                title: "拟态设计：触觉数字体验",
-                date: "2024-01-10",
-                excerpt: "拟态（Neumorphism）通过柔和的阴影和高光，在扁平设计中创造出类似真实物体的触觉感受...",
-                tags: ["设计", "CSS"],
-                content: `# 拟态设计：触觉数字体验
-
-拟态设计（Neumorphism/Soft UI）是扁平化设计的演进，它通过光影创造出元素的物理感。
-
-## 光影原理
-
-拟态设计基于两个核心阴影：
-- **高光**（左上）：#ffffff
-- **阴影**（右下）：#a3b1c6
-
-## 凸起效果
-
-\`\`\`css
-.neumorphic-raised {
-    background: #e0e5ec;
-    border-radius: 20px;
-    box-shadow: 
-        20px 20px 60px #a3b1c6,
-        -20px -20px 60px #ffffff;
-}
-\`\`\`
-
-## 凹陷效果
-
-\`\`\`css
-.neumorphic-inset {
-    background: #e0e5ec;
-    border-radius: 20px;
-    box-shadow: 
-        inset 5px 5px 10px #a3b1c6,
-        inset -5px -5px 10px #ffffff;
-}
-\`\`\`
-
-## 最佳实践
-
-1. 背景色必须是中性灰（#e0e5ec 效果最佳）
-2. 对比度较低，不适合文字内容
-3. 适合按钮、卡片、开关等交互元素
-4. 阴影要柔和（60px 模糊半径）
-
-> 拟态设计创造了一种独特的"软质"美学，让人想伸手触摸屏幕。`
-            },
-            {
-                id: 3,
-                title: "水液动画：为界面注入生命",
-                date: "2024-01-05",
-                excerpt: "液体动画（Liquid Animation）使用流畅的有机运动，打破了几何图形的僵硬感，创造出更具生命力的交互体验...",
-                tags: ["动画", "WebGL"],
-                content: `# 水液动画：为界面注入生命
-
-液体动画模仿真实世界的流体动力学，为数字界面带来有机的运动感。
-
-## 技术实现
-
-### CSS 变形动画
-
-\`\`\`css
-.liquid-button {
-    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-    animation: morph 8s ease-in-out infinite;
-}
-
-@keyframes morph {
-    0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-    50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
-}
-\`\`\`
-
-### SVG 滤镜
-
-使用 SVG gooey 效果创造粘连的液体感：
-
-\`\`\`html
-<filter id="goo">
-    <feGaussianBlur in="SourceGraphic" stdDeviation="10" />
-    <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" />
-</filter>
-\`\`\`
-
-## 应用场景
-
-- 页面过渡效果
-- 按钮悬停状态
-- 背景装饰元素
-- 加载动画
-
-> 液体动画让界面感觉更加自然和人性化，减少了数字世界的冰冷感。
-
-## 性能考虑
-
-液体动画通常涉及：
-- 频繁的重绘
-- 滤镜计算
-- 复杂的路径动画
-
-建议在非关键交互中使用，并始终提供 reduced-motion 替代方案。`
-            }
-        ];
-
         // 视图切换
-        function hideAllViews() {
-            document.getElementById('home-view').classList.add('hidden');
-            document.getElementById('post-view').classList.add('hidden');
-            document.getElementById('about-view').classList.add('hidden');
-            document.getElementById('local-view').classList.add('hidden');
-            
-            // 更新导航状态
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+        function updateNav(activeIndex) {
+            document.querySelectorAll('.nav-link').forEach((link, index) => {
+                if (index === activeIndex) link.classList.add('active');
+                else link.classList.remove('active');
+            });
         }
 
         function showHome() {
-            hideAllViews();
-            document.getElementById('home-view').classList.remove('hidden');
-            document.querySelectorAll('.nav-link')[0].classList.add('active');
-            renderPostList();
+            currentView = 'home';
+            updateNav(0);
+            currentPage = 1;
+            
+            document.getElementById('sidebarSearch').style.display = 'none';
+            document.getElementById('proverbBox').style.display = 'block';
+            document.getElementById('sidebarContent').innerHTML = `
+                <h3 style="font-family: 'YanZhenQing', serif; color: var(--primary-dark); margin-bottom: 15px; font-size: 1.3rem;">标签云</h3>
+                <div class="tag-cloud">
+                    <span class="tag">哲学</span>
+                    <span class="tag">生活</span>
+                    <span class="tag">技术</span>
+                    <span class="tag">艺术</span>
+                    <span class="tag">随笔</span>
+                </div>
+            `;
+            
+            const content = document.getElementById('contentArea');
+            content.innerHTML = `
+                <div class="glass-card hero-section">
+                    <h1 class="hero-title">PeaceQ</h1>
+                    <p class="hero-subtitle">兰心蕙质，宁静致远。在此记录思想的轨迹，分享生活的美学。</p>
+                    
+                    <div class="featured-grid">
+                        <div class="featured-card" onclick="showArticles()">
+                            <div class="featured-icon">文</div>
+                            <h3 style="font-family: 'YanZhenQing', serif; color: var(--primary-dark); margin-bottom: 10px;">文章</h3>
+                            <p style="color: #5a6c7d; font-size: 0.95rem;">深度思考与系统阐述</p>
+                        </div>
+                        <div class="featured-card" onclick="showEssays()">
+                            <div class="featured-icon">随</div>
+                            <h3 style="font-family: 'YanZhenQing', serif; color: var(--primary-dark); margin-bottom: 10px;">随笔</h3>
+                            <p style="color: #5a6c7d; font-size: 0.95rem;">即时感悟与日常记录</p>
+                        </div>
+                        <div class="featured-card" onclick="openSearch()">
+                            <div class="featured-icon">搜</div>
+                            <h3 style="font-family: 'YanZhenQing', serif; color: var(--primary-dark); margin-bottom: 10px;">搜索</h3>
+                            <p style="color: #5a6c7d; font-size: 0.95rem;">探索所有内容</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-card">
+                    <h2 style="font-family: 'YanZhenQing', serif; color: var(--primary-dark); margin-bottom: 20px; font-size: 1.8rem;">最新文章</h2>
+                    <div class="article-list">
+                        ${allArticles.slice(0, 5).map(article => createArticleItem(article)).join('')}
+                    </div>
+                </div>
+            `;
         }
 
-        function showAbout() {
-            hideAllViews();
-            document.getElementById('about-view').classList.remove('hidden');
-            document.querySelectorAll('.nav-link')[2].classList.add('active');
+        function showArticles() {
+            currentView = 'articles';
+            updateNav(1);
+            currentPage = 1;
+            
+            document.getElementById('sidebarSearch').style.display = 'block';
+            document.getElementById('proverbBox').style.display = 'none';
+            updateSidebarOutline();
+            
+            renderArticleList(allArticles, '文章');
         }
 
-        function showLocal() {
-            hideAllViews();
-            document.getElementById('local-view').classList.remove('hidden');
-            document.querySelectorAll('.nav-link')[1].classList.add('active');
+        function showEssays() {
+            currentView = 'essays';
+            updateNav(2);
+            currentPage = 1;
+            
+            document.getElementById('sidebarSearch').style.display = 'block';
+            document.getElementById('proverbBox').style.display = 'none';
+            updateSidebarOutline();
+            
+            renderEssayList(allEssays, '随笔');
         }
 
-        // 渲染文章列表
-        function renderPostList() {
-            const list = document.getElementById('post-list');
-            list.innerHTML = posts.map(post => `
-                <div class="post-item" onclick="showPost(${post.id})">
-                    <div class="post-date">${post.date}</div>
-                    <h3 class="post-title">${post.title}</h3>
-                    <p class="post-excerpt">${post.excerpt}</p>
-                    <div class="post-tags">
-                        ${post.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+        function updateSidebarOutline() {
+            const titles = currentView === 'articles' 
+                ? allArticles.map(a => a.name)
+                : allEssays.map(e => e.name);
+            
+            document.getElementById('sidebarContent').innerHTML = `
+                <h3 style="font-family: 'YanZhenQing', serif; color: var(--primary-dark); margin-bottom: 15px; font-size: 1.3rem;">目录</h3>
+                <ul style="list-style: none; max-height: 400px; overflow-y: auto;">
+                    ${titles.map((title, index) => `
+                        <li style="padding: 8px 0; border-bottom: 1px solid rgba(0,123,167,0.1); cursor: pointer; color: var(--text-secondary); transition: all 0.3s;" 
+                            onmouseover="this.style.color='var(--primary)'; this.style.paddingLeft='10px'" 
+                            onmouseout="this.style.color='#5a6c7d'; this.style.paddingLeft='0'"
+                            onclick="scrollToArticle(${index})">
+                            ${title}
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+        }
+
+        function createArticleItem(item) {
+            if (item.type === 'essay') {
+                return `
+                    <div class="article-item" onclick="openArticle('${item.name}', '${item.time}', 'essay')">
+                        <div class="article-content">
+                            <div class="article-title">${item.name}</div>
+                            <div class="article-subtitle">${item.time}</div>
+                        </div>
+                        <div class="article-date">${item.time}</div>
+                    </div>
+                `;
+            }
+            return `
+                <div class="article-item" onclick="openArticle('${item.name}', '${item.time}', 'article')">
+                    <div class="article-content">
+                        <div class="article-title">${item.name}</div>
+                        <div class="article-subtitle">${item.subtitle || '-'}</div>
+                    </div>
+                    <div class="article-date">${item.time}</div>
+                </div>
+            `;
+        }
+
+        function renderArticleList(list, title) {
+            const start = (currentPage - 1) * articlesPerPage;
+            const end = start + articlesPerPage;
+            const pageItems = list.slice(start, end);
+            const totalPages = Math.ceil(list.length / articlesPerPage);
+            
+            const content = document.getElementById('contentArea');
+            content.innerHTML = `
+                <div class="glass-card">
+                    <h1 style="font-family: 'YanZhenQing', serif; color: var(--primary-dark); margin-bottom: 30px; font-size: 2rem;">${title}</h1>
+                    <div class="article-list" id="articleList">
+                        ${pageItems.map(item => createArticleItem(item)).join('')}
+                    </div>
+                    
+                    ${totalPages > 1 ? `
+                        <div class="pagination">
+                            ${currentPage > 1 ? `<button class="page-btn" onclick="goToPage(1)">首页</button>` : ''}
+                            <button class="page-btn" onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''}>&lt;</button>
+                            
+                            ${Array.from({length: totalPages}, (_, i) => i + 1).map(page => `
+                                <button class="page-btn ${page === currentPage ? 'active' : ''}" onclick="goToPage(${page})">${page}</button>
+                            `).join('')}
+                            
+                            <button class="page-btn" onclick="changePage(1)" ${currentPage === totalPages ? 'disabled' : ''}>&gt;</button>
+                            ${currentPage < totalPages ? `<button class="page-btn" onclick="goToPage(${totalPages})">末页</button>` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function renderEssayList(list, title) {
+            // 随笔列表与文章类似，但显示格式略有不同
+            renderArticleList(list, title);
+        }
+
+        function changePage(delta) {
+            const list = currentView === 'articles' ? allArticles : allEssays;
+            const totalPages = Math.ceil(list.length / articlesPerPage);
+            const newPage = currentPage + delta;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                if (currentView === 'articles') {
+                    renderArticleList(allArticles, '文章');
+                } else {
+                    renderEssayList(allEssays, '随笔');
+                }
+            }
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            if (currentView === 'articles') {
+                renderArticleList(allArticles, '文章');
+            } else {
+                renderEssayList(allEssays, '随笔');
+            }
+        }
+
+        function filterCurrentList(keyword) {
+            if (!keyword) {
+                if (currentView === 'articles') {
+                    renderArticleList(allArticles, '文章');
+                } else {
+                    renderEssayList(allEssays, '随笔');
+                }
+                return;
+            }
+            
+            const list = currentView === 'articles' ? allArticles : allEssays;
+            const filtered = list.filter(item => 
+                item.name.includes(keyword) || 
+                (item.subtitle && item.subtitle.includes(keyword))
+            );
+            
+            const content = document.getElementById('contentArea');
+            content.innerHTML = `
+                <div class="glass-card">
+                    <h1 style="font-family: 'YanZhenQing', serif; color: var(--primary-dark); margin-bottom: 30px; font-size: 2rem;">
+                        搜索结果: "${keyword}"
+                    </h1>
+                    <div class="article-list">
+                        ${filtered.length > 0 
+                            ? filtered.map(item => createArticleItem(item)).join('')
+                            : '<p style="text-align: center; color: #5a6c7d; padding: 40px;">未找到相关内容</p>'
+                        }
+                    </div>
+                </div>
+            `;
+        }
+
+        // 搜索功能
+        function openSearch() {
+            document.getElementById('searchOverlay').classList.add('active');
+            document.getElementById('globalSearch').focus();
+        }
+
+        function closeSearch() {
+            document.getElementById('searchOverlay').classList.remove('active');
+            document.getElementById('searchResults').innerHTML = '';
+            document.getElementById('globalSearch').value = '';
+        }
+
+        function performSearch(keyword) {
+            if (!keyword) {
+                document.getElementById('searchResults').innerHTML = '';
+                return;
+            }
+            
+            const allItems = [...allArticles, ...allEssays];
+            const results = allItems.filter(item => 
+                item.name.includes(keyword) || 
+                (item.subtitle && item.subtitle.includes(keyword))
+            );
+            
+            document.getElementById('searchResults').innerHTML = results.map(item => `
+                <div class="article-item" onclick="openArticleFromSearch('${item.name}', '${item.time}', '${item.type}')" 
+                     style="margin-bottom: 15px; background: rgba(255,255,255,0.8);">
+                    <div class="article-content">
+                        <div class="article-title">${item.name}</div>
+                        <div class="article-subtitle">${item.subtitle || item.time} · ${item.type === 'article' ? '文章' : '随笔'}</div>
                     </div>
                 </div>
             `).join('');
         }
 
-        // 显示文章详情
-        function showPost(id) {
-            const post = posts.find(p => p.id === id);
-            if (!post) return;
-
-            hideAllViews();
-            document.getElementById('post-view').classList.remove('hidden');
-            
-            const content = document.getElementById('post-content');
-            content.innerHTML = `<div class="loader"><div class="loader-circle"></div></div>`;
-            
-            // 模拟加载
-            setTimeout(() => {
-                content.innerHTML = MarkdownParser.parse(post.content);
-            }, 300);
+        function openArticleFromSearch(name, time, type) {
+            closeSearch();
+            openArticle(name, time, type);
         }
 
-        // 文件处理
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                readFile(file);
-            }
-        }
-
-        function readFile(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target.result;
-                showLocal();
-                const contentDiv = document.getElementById('local-content');
-                const uploadZone = document.getElementById('uploadZone');
+        // 打开文章详情
+        async function openArticle(name, time, type) {
+            const content = document.getElementById('contentArea');
+            content.innerHTML = `
+                <div class="glass-card article-full active">
+                    <button class="back-btn" onclick="${type === 'article' ? 'showArticles()' : 'showEssays()'}">
+                        ← 返回列表
+                    </button>
+                    <div class="loader"><div class="loader-circle"></div></div>
+                </div>
+            `;
+            
+            try {
+                // 实际项目中应读取 assets/passage/name_subtitle_time.markdown
+                // const filename = type === 'article' 
+                //     ? `assets/passage/${name}_${subtitle}_${time}.markdown`
+                //     : `assets/essay/${name}_${time}.markdown`;
+                // const response = await fetch(filename);
+                // const markdown = await response.text();
                 
-                uploadZone.classList.add('hidden');
-                contentDiv.classList.remove('hidden');
-                contentDiv.innerHTML = MarkdownParser.parse(content);
-            };
-            reader.readAsText(file);
+                // 模拟内容
+                const markdown = `# ${name}\n\n> ${time}\n\n这是一篇关于${name}的${type === 'article' ? '文章' : '随笔'}。\n\n## 引言\n\n在这里，PeaceQ 分享了关于${name}的思考...\n\n## 正文\n\n内容加载中，实际项目中将从本地文件读取...\n\n$$E = mc^2$$\n\n这是一行数学公式示例。\n\n## 结语\n\n感谢阅读。`;
+                
+                renderMarkdown(name, time, markdown, type);
+            } catch (e) {
+                content.innerHTML = `
+                    <div class="glass-card">
+                        <button class="back-btn" onclick="${type === 'article' ? 'showArticles()' : 'showEssays()'}">
+                            ← 返回列表
+                        </button>
+                        <p style="text-align: center; color: #5a6c7d; padding: 40px;">无法加载文章内容</p>
+                    </div>
+                `;
+            }
         }
 
-        // 拖拽支持
-        const uploadZone = document.getElementById('uploadZone');
-
-        uploadZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadZone.classList.add('dragover');
-        });
-
-        uploadZone.addEventListener('dragleave', () => {
-            uploadZone.classList.remove('dragover');
-        });
-
-        uploadZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadZone.classList.remove('dragover');
+        function renderMarkdown(title, time, markdown, type) {
+            const content = document.getElementById('contentArea');
+            const html = marked.parse(markdown);
             
-            const files = e.dataTransfer.files;
-            if (files.length > 0 && files[0].name.match(/\.(md|markdown|txt)$/i)) {
-                readFile(files[0]);
-            } else {
-                alert('请上传 Markdown 文件 (.md, .markdown, .txt)');
+            content.innerHTML = `
+                <div class="glass-card article-full active">
+                    <button class="back-btn" onclick="${type === 'article' ? 'showArticles()' : 'showEssays()'}">
+                        ← 返回列表
+                    </button>
+                    <article class="markdown-body" id="articleBody">
+                        ${html}
+                    </article>
+                </div>
+            `;
+            
+            // 渲染 KaTeX
+            if (window.renderMathInElement) {
+                renderMathInElement(document.getElementById('articleBody'), {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ]
+                });
             }
-        });
+        }
 
-        // 初始化
-        renderPostList();
+        function scrollToArticle(index) {
+            const articles = document.querySelectorAll('.article-item');
+            if (articles[index]) {
+                articles[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                articles[index].style.background = 'rgba(0, 123, 167, 0.1)';
+                setTimeout(() => {
+                    articles[index].style.background = '';
+                }, 1000);
+            }
+        }
 
         // 键盘快捷键
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                showHome();
+                closeSearch();
+            }
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                openSearch();
             }
         });
     </script>
