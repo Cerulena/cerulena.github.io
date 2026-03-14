@@ -20,7 +20,6 @@ You Will Found Some Thing Cool In Here.
 
 ### ✨ 特点
 
-- 📱 **响应式布局** — 适配各种设备屏幕
 - ⚡ **静态部署** — 利用 GitHub Pages 快速加载
 
 ---
