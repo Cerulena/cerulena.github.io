@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IFS Fractal + Normal Mapping</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #050505;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        #glCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* 语言检测加载层 */
+        .lang-detect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #050505;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+
+        .lang-detect.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .detect-spinner {
+            width: 60px;
+            height: 60px;
+            border: 2px solid transparent;
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 30px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .detect-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .detect-region {
+            margin-top: 15px;
+            font-size: 12px;
+            color: rgba(0, 212, 255, 0.8);
+            font-family: 'Courier New', monospace;
+        }
+
+        /* 配置面板 - 右侧液态玻璃 */
+        .config-panel {
+            position: fixed;
+            top: 50%;
+            right: 40px;
+            transform: translateY(-50%) translateX(100px);
+            width: 380px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: rgba(10, 15, 30, 0.25);
+            backdrop-filter: blur(40px) saturate(200%);
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 
+                0 50px 100px -20px rgba(0, 0, 0, 0.6),
+                0 30px 60px -30px rgba(0, 123, 167, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 123, 167, 0.5) transparent;
+        }
+
+        .config-panel::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .config-panel::-webkit-scrollbar-thumb {
+            background: rgba(0, 123, 167, 0.5);
+            border-radius: 2px;
+        }
+
+        .config-panel.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-50%) translateX(0);
+        }
+
+        /* 液态边框 */
+        .config-panel::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 26px;
+            padding: 2px;
+            background: linear-gradient(135deg, 
+                rgba(0, 212, 255, 0.6), 
+                rgba(0, 123, 167, 0.4),
+                rgba(0, 212, 255, 0.2),
+                rgba(0, 123, 167, 0.5));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            animation: liquidFlow 8s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes liquidFlow {
+            0% { filter: hue-rotate(0deg) blur(0px); }
+            50% { filter: hue-rotate(30deg) blur(1px); }
+            100% { filter: hue-rotate(0deg) blur(0px); }
+        }
+
+        .panel-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .panel-title {
+            font-size: 22px;
+            font-weight: 300;
+            color: #fff;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #00d4ff, #007ba7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+
+        .panel-subtitle {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+        }
+
+        .control-value {
+            color: #00d4ff;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+
+        /* 滑动条 */
+        input[type="range"] {
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: linear-gradient(135deg, #00d4ff, #007ba7);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+            transition: transform 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* 方向控制 */
+        .direction-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            width: 100px;
+            margin: 0 auto;
+        }
+
+        .dir-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .dir-btn:hover {
+            background: rgba(0, 123, 167, 0.3);
+            border-color: rgba(0, 212, 255, 0.5);
+            color: #fff;
+        }
+
+        .dir-btn.active {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(0, 123, 167, 0.3));
+            border-color: #00d4ff;
+            color: #00d4ff;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .dir-btn.center {
+            grid-column: 2;
+        }
+
+        /* 开关 */
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 22px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 11px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.5), rgba(0, 123, 167, 0.5));
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(22px);
+        }
+
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 种子输入 */
+        .seed-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .seed-input:focus {
+            border-color: rgba(0, 212, 255, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .seed-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .seed-btn {
+            padding: 10px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .seed-btn:hover {
+            background: rgba(0, 123, 167, 0.3);
+            border-color: rgba(0, 212, 255, 0.3);
+            color: #fff;
+        }
+
+        /* 导出区域 */
+        .export-section {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        .export-title {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 14px;
+        }
+
+        .resolution-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .res-btn {
+            padding: 8px 6px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .res-btn:hover {
+            background: rgba(0, 123, 167, 0.2);
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+
+        .res-btn.active {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 123, 167, 0.2));
+            border-color: #00d4ff;
+            color: #00d4ff;
+        }
+
+        .fps-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .export-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(0, 123, 167, 0.3));
+            color: #fff;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .export-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.5), rgba(0, 123, 167, 0.5));
+            box-shadow: 0 10px 30px rgba(0, 123, 167, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .export-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 进度条 */
+        .progress-container {
+            display: none;
+            margin-top: 14px;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-bar {
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00d4ff, #007ba7);
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 6px;
+            letter-spacing: 1px;
+        }
+
+        /* 提示文字 */
+        .hint {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .hint.hidden {
+            opacity: 0;
+        }
+
+        /* 关闭按钮 */
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: rgba(0, 123, 167, 0.3);
+            border-color: rgba(0, 212, 255, 0.5);
+            color: #fff;
+            transform: rotate(90deg);
+        }
+
+        /* 语言切换按钮 */
+        .lang-switch {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            padding: 6px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .lang-switch:hover {
+            background: rgba(0, 123, 167, 0.3);
+            border-color: rgba(0, 212, 255, 0.3);
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .config-panel {
+                right: 20px;
+                width: calc(100vw - 40px);
+                max-width: 360px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="glCanvas"></canvas>
+
+    <!-- 语言检测层 -->
+    <div class="lang-detect" id="langDetect">
+        <div class="detect-spinner"></div>
+        <div class="detect-text" id="detectText">Detecting Region...</div>
+        <div class="detect-region" id="detectRegion"></div>
+    </div>
+
+    <!-- 配置面板 -->
+    <div class="config-panel" id="configPanel">
+        <button class="close-btn" onclick="togglePanel()">×</button>
+        <button class="lang-switch" onclick="toggleLanguage()" id="langBtn">EN/中文</button>
+        
+        <div class="panel-header">
+            <div class="panel-title" data-i18n="title">PeaceQ</div>
+            <div class="panel-subtitle" data-i18n="subtitle">QUANTUM CONFIGURATION</div>
+        </div>
+
+        <!-- 种子控制 -->
+        <div class="control-group">
+            <div class="control-label">
+                <span data-i18n="seed">Random Seed</span>
+            </div>
+            <div class="seed-row">
+                <input type="text" class="seed-input" id="seedInput" placeholder="0.123456" maxlength="10">
+                <button class="seed-btn" onclick="randomizeSeed()" data-i18n="random">Random</button>
+            </div>
+        </div>
+
+        <!-- 方向控制 -->
+        <div class="control-group">
+            <div class="control-label">
+                <span data-i18n="direction">Flow Direction</span>
+                <span class="control-value" id="dirValue">Auto</span>
+            </div>
+            <div class="direction-grid">
+                <div class="dir-btn" data-dir="ul">↖</div>
+                <div class="dir-btn active center" data-dir="u">↑</div>
+                <div class="dir-btn" data-dir="ur">↗</div>
+                <div class="dir-btn" data-dir="l">←</div>
+                <div class="dir-btn" data-dir="c">◉</div>
+                <div class="dir-btn" data-dir="r">→</div>
+                <div class="dir-btn" data-dir="dl">↙</div>
+                <div class="dir-btn" data-dir="d">↓</div>
+                <div class="dir-btn" data-dir="dr">↘</div>
+            </div>
+        </div>
+
+        <!-- 流动速度 -->
+        <div class="control-group">
+            <div class="control-label">
+                <span data-i18n="speed">Flow Speed</span>
+                <span class="control-value" id="speedValue">1.0x</span>
+            </div>
+            <input type="range" id="speedSlider" min="0" max="300" value="100">
+        </div>
+
+        <!-- 缩放控制 -->
+        <div class="control-group">
+            <div class="control-label">
+                <span data-i18n="zoom">Zoom Level</span>
+                <span class="control-value" id="zoomValue">1.0x</span>
+            </div>
+            <input type="range" id="zoomSlider" min="10" max="500" value="100">
+        </div>
+
+        <!-- 变换开关 -->
+        <div class="control-group">
+            <div class="toggle-row">
+                <span class="control-label" style="margin: 0;" data-i18n="ifs">IFS Transform</span>
+                <div class="toggle-switch active" id="ifsToggle"></div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="toggle-row">
+                <span class="control-label" style="margin: 0;" data-i18n="mirror">Mirror Effect</span>
+                <div class="toggle-switch active" id="mirrorToggle"></div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="toggle-row">
+                <span class="control-label" style="margin: 0;" data-i18n="normal">Normal Mapping</span>
+                <div class="toggle-switch active" id="normalToggle"></div>
+            </div>
+        </div>
+
+        <!-- 导出设置 -->
+        <div class="export-section">
+            <div class="export-title" data-i18n="export">Export to MP4</div>
+            
+            <div class="control-label" style="margin-bottom: 6px;">
+                <span data-i18n="resolution">Resolution</span>
+                <span class="control-value" id="resValue">2560×1440</span>
+            </div>
+            <div class="resolution-grid">
+                <div class="res-btn" data-w="1920" data-h="1080">1080p</div>
+                <div class="res-btn active" data-w="2560" data-h="1440">2K</div>
+                <div class="res-btn" data-w="3840" data-h="2160">4K</div>
+            </div>
+
+            <div class="control-label" style="margin-bottom: 6px;">
+                <span data-i18n="fps">Frame Rate</span>
+                <span class="control-value" id="fpsValue">60 FPS</span>
+            </div>
+            <div class="fps-grid">
+                <div class="res-btn" data-fps="30">30</div>
+                <div class="res-btn active" data-fps="60">60</div>
+                <div class="res-btn" data-fps="120">120</div>
+                <div class="res-btn" data-fps="144">144</div>
+            </div>
+
+            <button class="export-btn" id="exportBtn" onclick="startExport()" data-i18n="record">Start Recording</button>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Preparing...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hint" id="hint">Press "X" for configuration</div>
+
+    <script>
+        // ============================================
+        // 国际化支持
+        // ============================================
+        
+        const i18n = {
+            en: {
+                title: "PeaceQ",
+                subtitle: "QUANTUM CONFIGURATION",
+                seed: "Random Seed",
+                random: "Random",
+                direction: "Flow Direction",
+                speed: "Flow Speed",
+                zoom: "Zoom Level",
+                ifs: "IFS Transform",
+                mirror: "Mirror Effect",
+                normal: "Normal Mapping",
+                export: "Export to MP4",
+                resolution: "Resolution",
+                fps: "Frame Rate",
+                record: "Start Recording",
+                hint: 'Press "X" for configuration',
+                dirNames: {
+                    u: 'Up', d: 'Down', l: 'Left', r: 'Right',
+                    ul: 'Up-Left', ur: 'Up-Right', dl: 'Down-Left', dr: 'Down-Right',
+                    c: 'Auto'
+                }
+            },
+            zh: {
+                title: "PeaceQ",
+                subtitle: "量子配置",
+                seed: "随机种子",
+                random: "随机",
+                direction: "流动方向",
+                speed: "流动速度",
+                zoom: "缩放级别",
+                ifs: "IFS变换",
+                mirror: "镜像效果",
+                normal: "法线贴图",
+                export: "导出MP4",
+                resolution: "分辨率",
+                fps: "帧率",
+                record: "开始录制",
+                hint: '按 "X" 键打开配置',
+                dirNames: {
+                    u: '上', d: '下', l: '左', r: '右',
+                    ul: '左上', ur: '右上', dl: '左下', dr: '右下',
+                    c: '自动'
+                }
+            }
+        };
+
+        let currentLang = 'en';
+        let detectedRegion = '';
+
+        // 检测语言和地区
+        async function detectLanguage() {
+            const detectDiv = document.getElementById('langDetect');
+            const detectText = document.getElementById('detectText');
+            const detectRegion = document.getElementById('detectRegion');
+            
+            try {
+                // 尝试获取IP地理位置
+                const response = await fetch('https://ipapi.co/json/', { timeout: 3000 });
+                const data = await response.json();
+                
+                detectedRegion = data.country_code;
+                const isChina = data.country_code === 'CN' || 
+                               data.languages?.includes('zh') ||
+                               data.timezone?.includes('Asia/Shanghai');
+                
+                if (isChina) {
+                    currentLang = 'zh';
+                    detectText.textContent = '检测到中文区域...';
+                } else {
+                    currentLang = 'en';
+                    detectText.textContent = 'English region detected...';
+                }
+                
+                detectRegion.textContent = `${data.country_name} (${data.country_code}) | ${data.city}`;
+                
+            } catch (e) {
+                // 失败时尝试 navigator.language
+                const browserLang = navigator.language || navigator.userLanguage;
+                const isChinese = browserLang.startsWith('zh');
+                
+                currentLang = isChinese ? 'zh' : 'en';
+                detectText.textContent = isChinese ? '使用浏览器语言: 中文' : 'Using browser language: English';
+                detectRegion.textContent = `Navigator: ${browserLang}`;
+            }
+            
+            // 应用语言
+            applyLanguage();
+            
+            // 延迟淡出
+            setTimeout(() => {
+                detectDiv.classList.add('fade-out');
+                setTimeout(() => {
+                    detectDiv.style.display = 'none';
+                }, 800);
+            }, 1500);
+        }
+
+        function applyLanguage() {
+            const texts = i18n[currentLang];
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (texts[key]) el.textContent = texts[key];
+            });
+            
+            document.getElementById('hint').textContent = texts.hint;
+            
+            // 更新方向显示
+            const activeDir = document.querySelector('.dir-btn.active');
+            if (activeDir) {
+                const dirKey = activeDir.dataset.dir;
+                document.getElementById('dirValue').textContent = texts.dirNames[dirKey];
+            }
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'zh' : 'en';
+            applyLanguage();
+        }
+
+        // 启动检测
+        detectLanguage();
+
+        // ============================================
+        // WebGL 核心
+        // ============================================
+        
+        const canvas = document.getElementById('glCanvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        
+        const config = {
+            seed: 0.123456,
+            direction: { x: 0, y: 1 },
+            speed: 1.0,
+            zoom: 1.0,
+            ifsEnabled: true,
+            mirrorEnabled: true,
+            normalEnabled: true,
+            exportWidth: 2560,
+            exportHeight: 1440,
+            exportFps: 60,
+            exportDuration: 10
+        };
+
+        const vsSource = `
+            attribute vec4 aPosition;
+            void main() {
+                gl_Position = aPosition;
+            }
+        `;
+
+        const fsSource = `
+            precision highp float;
+            
+            uniform vec2 iResolution;
+            uniform float iTime;
+            uniform vec2 iMouse;
+            uniform float iMouseZ;
+            uniform float uSeed;
+            uniform vec2 uDirection;
+            uniform float uSpeed;
+            uniform float uZoom;
+            uniform float uIFS;
+            uniform float uMirror;
+            uniform float uNormal;
+            
+            // 基于种子的哈希
+            float seedHash(float s, vec2 p) {
+                return fract(sin(s + dot(p, vec2(127.1, 311.7))) * 43758.5453);
+            }
+            
+            float hash(vec2 p) {
+                return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+            }
+            
+            float noise(vec2 p) {
+                vec2 i = floor(p);
+                vec2 f = fract(p);
+                f = f * f * (3.0 - 2.0 * f);
+                float a = hash(i);
+                float b = hash(i + vec2(1.0, 0.0));
+                float c = hash(i + vec2(0.0, 1.0));
+                float d = hash(i + vec2(1.0, 1.0));
+                return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+            }
+            
+            float fbm(vec2 p, float seed) {
+                float value = 0.0;
+                float amplitude = 0.5;
+                for (int i = 0; i < 5; i++) {
+                    value += amplitude * noise(p + seed);
+                    p *= 2.0;
+                    amplitude *= 0.5;
+                }
+                return value;
+            }
+            
+            vec3 textureSample(vec2 uv, float seed) {
+                float n1 = fbm(uv * 3.0, seed);
+                float n2 = fbm(uv * 8.0 + vec2(5.2, 1.3), seed);
+                float n3 = noise(uv * 15.0 + seed);
+                vec3 col;
+                col.r = n1 * 0.6 + n2 * 0.3 + n3 * 0.1;
+                col.g = n1 * 0.5 + n2 * 0.35 + n3 * 0.15;
+                col.b = n1 * 0.4 + n2 * 0.4 + n3 * 0.2;
+                return col;
+            }
+            
+            float height(vec2 p, float seed) {
+                return textureSample(p, seed).r;
+            }
+            
+            vec3 bump(vec2 uv, float strength, float seed) {
+                float h = 0.004;
+                float dx = height(uv, seed) - height(uv + vec2(h, 0.0), seed);
+                float dy = height(uv, seed) - height(uv + vec2(0.0, h), seed);
+                return normalize(vec3(0.0, 0.0, -1.0) + vec3(dx, dy, 0.0) * strength);
+            }
+            
+            void mirror(inout vec2 p) {
+                p = fract(p) - 0.5;
+                vec2 id = floor(p);
+                if (mod(id.x, 2.0) == 0.0) p.x *= -1.0;
+                if (mod(id.y, 2.0) == 0.0) p.y *= -1.0;
+            }
+            
+            void main() {
+                vec2 u = gl_FragCoord.xy;
+                vec2 R = iResolution;
+                
+                vec2 uv = u / R;
+                vec2 m = vec2((R.x/R.y) * (iMouse.x/R.x - 0.5), iMouse.y/R.y - 0.5);
+                
+                uv -= 0.5;
+                uv *= 0.3 / uZoom;  // 应用缩放
+                uv.x *= 2.0;
+                
+                if (iMouseZ > 0.0) {
+                    float scale = max((m.y + 0.3) * 5.0, 0.1);
+                    uv *= scale;
+                }
+                
+                uv += 0.5;
+                uv.x -= 200.0;
+                
+                // 应用方向和速度
+                vec2 timeOffset = uDirection * iTime * uSpeed * 0.05;
+                uv += 0.4 * vec2(cos(iTime * 0.3 * uSpeed) * 0.3, -iTime * 0.05 * uSpeed) + timeOffset * 0.1;
+                
+                float rot = 1.0 / 1.4;
+                uv = vec2((uv.x - uv.y) * rot, (uv.y + uv.x) * rot);
+                
+                if (uMirror > 0.5) mirror(uv);
+                
+                // IFS迭代
+                float iterations = mix(5.0, 35.0, uIFS);
+                float a = -0.093 + uSeed * 0.01;  // 种子影响角度
+                vec2 v = vec2(cos(a), sin(a));
+                
+                for (int i = 0; i < 35; i++) {
+                    if (float(i) >= iterations) break;
+                    uv -= 0.5;
+                    uv *= 1.1;
+                    uv += 0.74;
+                    uv = abs(uv - 0.5);
+                    uv.x -= 0.505;
+                    float d = dot(uv, v);
+                    if (d < 0.0) uv -= v * d * 2.0;
+                }
+                
+                float k = dot(uv, uv) * 18.0 + 3.0;
+                float t = 1.8 * (uv.x * 2.0 + uv.y * 3.0);
+                vec3 fractalCol = 0.5 + 0.6 * cos(vec3(2.4, 2.0, 5.0) * t + k * 0.6);
+                
+                vec3 tex1 = textureSample(uv * 0.5, uSeed);
+                vec3 tex2 = textureSample(uv * 0.4, uSeed);
+                fractalCol -= tex1 * 0.3;
+                fractalCol += tex2 * 0.2;
+                
+                float blend = 0.5 + 0.5 * sin(iTime * 0.5 * uSpeed + dot(uv, uv) * 12.0);
+                fractalCol = mix(vec3(fractalCol.b), vec3(fractalCol.g), blend);
+                fractalCol = clamp(fractalCol, 0.25, 0.9);
+                fractalCol = 1.0 - exp(-fractalCol);
+                
+                vec3 col = fractalCol;
+                if (uNormal > 0.5) {
+                    vec2 nuv = (u - 0.5 * R) / R.y;
+                    vec3 lp = vec3(cos(iTime * 0.5 * uSpeed) * 0.1, sin(iTime * 0.5 * uSpeed) * 0.1, -1.0);
+                    vec3 sp = vec3(nuv, 0.0);
+                    vec3 ro = vec3(0.0, 0.0, -1.0);
+                    vec3 rd = normalize(sp - ro);
+                    vec3 ld = lp - sp;
+                    float dist = max(length(ld), 0.001);
+                    ld /= dist;
+                    vec3 objCol = fractalCol * vec3(0.99, 0.95, 0.9);
+                    vec3 norm = bump(uv, 5.0, uSeed);
+                    float dif = max(dot(norm, ld), 0.0);
+                    vec3 refl = reflect(-ld, norm);
+                    float spec = pow(max(dot(refl, -rd), 0.0), 16.0);
+                    float fal = 0.85 / (dist * dist);
+                    col = (objCol * (dif + 0.2)) * fal;
+                    col += vec3(0.6) * spec * 0.12 * fal;
+                    col = pow(col * 1.5, vec3(1.6));
+                    col *= smoothstep(0.8, 0.35, abs(nuv.y));
+                }
+                
+                col = mix(col * 0.3, col, 0.7);
+                col += vec3(0.0, 0.02, 0.05);
+                gl_FragColor = vec4(col, 1.0);
+            }
+        `;
+
+        const vs = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vs, vsSource);
+        gl.compileShader(vs);
+
+        const fs = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fs, fsSource);
+        gl.compileShader(fs);
+
+        const shaderProgram = gl.createProgram();
+        gl.attachShader(shaderProgram, vs);
+        gl.attachShader(shaderProgram, fs);
+        gl.linkProgram(shaderProgram);
+
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            -1, -1,  1, -1,  -1, 1,
+            -1,  1,  1, -1,   1, 1
+        ]), gl.STATIC_DRAW);
+
+        let startTime = Date.now();
+        let mouseX = 0.5, mouseY = 0.5, mouseZ = 0;
+        let isExporting = false;
+        let exportStartTime = 0;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+        
+        window.addEventListener('resize', resize);
+        resize();
+
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = canvas.height - e.clientY;
+            mouseZ = 1;
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+            mouseZ = 0;
+        });
+
+        function render() {
+            const time = isExporting ? 
+                (exportStartTime + (recordedChunks.length / config.exportFps)) : 
+                (Date.now() - startTime) * 0.001;
+            
+            gl.useProgram(shaderProgram);
+            
+            const posLoc = gl.getAttribLocation(shaderProgram, 'aPosition');
+            gl.enableVertexAttribArray(posLoc);
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+            
+            gl.uniform2f(gl.getUniformLocation(shaderProgram, 'iResolution'), canvas.width, canvas.height);
+            gl.uniform1f(gl.getUniformLocation(shaderProgram, 'iTime'), time);
+            gl.uniform2f(gl.getUniformLocation(shaderProgram, 'iMouse'), mouseX, mouseY);
+            gl.uniform1f(gl.getUniformLocation(shaderProgram, 'iMouseZ'), mouseZ);
+            gl.uniform1f(gl.getUniformLocation(shaderProgram, 'uSeed'), config.seed);
+            gl.uniform2f(gl.getUniformLocation(shaderProgram, 'uDirection'), config.direction.x, config.direction.y);
+            gl.uniform1f(gl.getUniformLocation(shaderProgram, 'uSpeed'), config.speed);
+            gl.uniform1f(gl.getUniformLocation(shaderProgram, 'uZoom'), config.zoom);
+            gl.uniform1f(gl.getUniformLocation(shaderProgram, 'uIFS'), config.ifsEnabled ? 1.0 : 0.0);
+            gl.uniform1f(gl.getUniformLocation(shaderProgram, 'uMirror'), config.mirrorEnabled ? 1.0 : 0.0);
+            gl.uniform1f(gl.getUniformLocation(shaderProgram, 'uNormal'), config.normalEnabled ? 1.0 : 0.0);
+            
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            
+            requestAnimationFrame(render);
+        }
+
+        render();
+
+        // ============================================
+        // UI 控制
+        // ============================================
+
+        const panel = document.getElementById('configPanel');
+        const hint = document.getElementById('hint');
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'x' || e.key === 'X') {
+                togglePanel();
+            }
+            if (e.key === 'Escape') {
+                panel.classList.remove('active');
+                hint.classList.remove('hidden');
+            }
+        });
+
+        function togglePanel() {
+            panel.classList.toggle('active');
+            hint.classList.toggle('hidden');
+        }
+
+        // 种子控制
+        function randomizeSeed() {
+            config.seed = Math.random();
+            document.getElementById('seedInput').value = config.seed.toFixed(6);
+        }
+
+        document.getElementById('seedInput').addEventListener('change', (e) => {
+            config.seed = parseFloat(e.target.value) || 0;
+        });
+
+        // 方向控制
+        const dirMap = {
+            'u': { x: 0, y: 1 },
+            'd': { x: 0, y: -1 },
+            'l': { x: -1, y: 0 },
+            'r': { x: 1, y: 0 },
+            'ul': { x: -0.707, y: 0.707 },
+            'ur': { x: 0.707, y: 0.707 },
+            'dl': { x: -0.707, y: -0.707 },
+            'dr': { x: 0.707, y: -0.707 },
+            'c': { x: 0, y: 0 }
+        };
+
+        document.querySelectorAll('.dir-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const dir = dirMap[btn.dataset.dir];
+                config.direction = { x: dir.x, y: dir.y };
+                
+                const texts = i18n[currentLang];
+                document.getElementById('dirValue').textContent = texts.dirNames[btn.dataset.dir];
+            });
+        });
+
+        // 速度控制
+        const speedSlider = document.getElementById('speedSlider');
+        speedSlider.addEventListener('input', () => {
+            config.speed = speedSlider.value / 100;
+            document.getElementById('speedValue').textContent = config.speed.toFixed(1) + 'x';
+        });
+
+        // 缩放控制
+        const zoomSlider = document.getElementById('zoomSlider');
+        zoomSlider.addEventListener('input', () => {
+            config.zoom = zoomSlider.value / 100;
+            document.getElementById('zoomValue').textContent = config.zoom.toFixed(1) + 'x';
+        });
+
+        // 开关控制
+        function setupToggle(id, configKey) {
+            const toggle = document.getElementById(id);
+            toggle.addEventListener('click', () => {
+                toggle.classList.toggle('active');
+                config[configKey] = toggle.classList.contains('active');
+            });
+        }
+
+        setupToggle('ifsToggle', 'ifsEnabled');
+        setupToggle('mirrorToggle', 'mirrorEnabled');
+        setupToggle('normalToggle', 'normalEnabled');
+
+        // 分辨率控制
+        document.querySelectorAll('.res-btn[data-w]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.res-btn[data-w]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                config.exportWidth = parseInt(btn.dataset.w);
+                config.exportHeight = parseInt(btn.dataset.h);
+                document.getElementById('resValue').textContent = 
+                    `${config.exportWidth}×${config.exportHeight}`;
+            });
+        });
+
+        // FPS控制
+        document.querySelectorAll('.res-btn[data-fps]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.res-btn[data-fps]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                config.exportFps = parseInt(btn.dataset.fps);
+                document.getElementById('fpsValue').textContent = config.exportFps + ' FPS';
+            });
+        });
+
+        // ============================================
+        // MP4 导出
+        // ============================================
+
+        async function startExport() {
+            const btn = document.getElementById('exportBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            btn.disabled = true;
+            btn.textContent = currentLang === 'zh' ? '录制中...' : 'Recording...';
+            progressContainer.classList.add('active');
+
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = config.exportWidth;
+            exportCanvas.height = config.exportHeight;
+            const exportGl = exportCanvas.getContext('webgl', { preserveDrawingBuffer: true });
+            
+            const exportVs = exportGl.createShader(exportGl.VERTEX_SHADER);
+            exportGl.shaderSource(exportVs, vsSource);
+            exportGl.compileShader(exportVs);
+
+            const exportFs = exportGl.createShader(exportGl.FRAGMENT_SHADER);
+            exportGl.shaderSource(exportFs, fsSource);
+            exportGl.compileShader(exportFs);
+
+            const exportProgram = exportGl.createProgram();
+            exportGl.attachShader(exportProgram, exportVs);
+            exportGl.attachShader(exportProgram, exportFs);
+            exportGl.linkProgram(exportProgram);
+
+            const exportBuffer = exportGl.createBuffer();
+            exportGl.bindBuffer(exportGl.ARRAY_BUFFER, exportBuffer);
+            exportGl.bufferData(exportGl.ARRAY_BUFFER, new Float32Array([
+                -1, -1,  1, -1,  -1, 1,
+                -1,  1,  1, -1,   1, 1
+            ]), exportGl.STATIC_DRAW);
+
+            const stream = exportCanvas.captureStream(config.exportFps);
+            mediaRecorder = new MediaRecorder(stream, {
+                mimeType: 'video/webm;codecs=vp9',
+                videoBitsPerSecond: 80000000
+            });
+
+            recordedChunks = [];
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `peaceq_${config.exportWidth}x${config.exportHeight}_${config.exportFps}fps_seed${config.seed.toFixed(3)}.webm`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                btn.disabled = false;
+                btn.textContent = currentLang === 'zh' ? '开始录制' : 'Start Recording';
+                progressContainer.classList.remove('active');
+                progressFill.style.width = '0%';
+                isExporting = false;
+            };
+
+            isExporting = true;
+            exportStartTime = 0;
+            mediaRecorder.start(100);
+
+            const totalFrames = config.exportDuration * config.exportFps;
+            let frameCount = 0;
+
+            function exportFrame() {
+                if (!isExporting) return;
+
+                const time = frameCount / config.exportFps;
+                
+                exportGl.viewport(0, 0, exportCanvas.width, exportCanvas.height);
+                exportGl.useProgram(exportProgram);
+                
+                const posLoc = exportGl.getAttribLocation(exportProgram, 'aPosition');
+                exportGl.enableVertexAttribArray(posLoc);
+                exportGl.bindBuffer(exportGl.ARRAY_BUFFER, exportBuffer);
+                exportGl.vertexAttribPointer(posLoc, 2, exportGl.FLOAT, false, 0, 0);
+                
+                exportGl.uniform2f(exportGl.getUniformLocation(exportProgram, 'iResolution'), 
+                    exportCanvas.width, exportCanvas.height);
+                exportGl.uniform1f(exportGl.getUniformLocation(exportProgram, 'iTime'), time);
+                exportGl.uniform2f(exportGl.getUniformLocation(exportProgram, 'iMouse'), 0, 0);
+                exportGl.uniform1f(exportGl.getUniformLocation(exportProgram, 'iMouseZ'), 0);
+                exportGl.uniform1f(exportGl.getUniformLocation(exportProgram, 'uSeed'), config.seed);
+                exportGl.uniform2f(exportGl.getUniformLocation(exportProgram, 'uDirection'), 
+                    config.direction.x, config.direction.y);
+                exportGl.uniform1f(exportGl.getUniformLocation(exportProgram, 'uSpeed'), config.speed);
+                exportGl.uniform1f(exportGl.getUniformLocation(exportProgram, 'uZoom'), config.zoom);
+                exportGl.uniform1f(exportGl.getUniformLocation(exportProgram, 'uIFS'), 
+                    config.ifsEnabled ? 1.0 : 0.0);
+                exportGl.uniform1f(exportGl.getUniformLocation(exportProgram, 'uMirror'), 
+                    config.mirrorEnabled ? 1.0 : 0.0);
+                exportGl.uniform1f(exportGl.getUniformLocation(exportProgram, 'uNormal'), 
+                    config.normalEnabled ? 1.0 : 0.0);
+                
+                exportGl.drawArrays(exportGl.TRIANGLES, 0, 6);
+
+                frameCount++;
+                const progress = (frameCount / totalFrames) * 100;
+                progressFill.style.width = progress + '%';
+                
+                const texts = i18n[currentLang];
+                progressText.textContent = currentLang === 'zh' ? 
+                    `渲染中 ${frameCount}/${totalFrames} 帧 (${Math.round(progress)}%)` :
+                    `Rendering ${frameCount}/${totalFrames} frames (${Math.round(progress)}%)`;
+
+                if (frameCount < totalFrames) {
+                    requestAnimationFrame(exportFrame);
+                } else {
+                    mediaRecorder.stop();
+                }
+            }
+
+            exportFrame();
+        }
+    </script>
+</body>
+</html>
