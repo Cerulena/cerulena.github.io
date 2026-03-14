@@ -1,1 +1,960 @@
-<p>Hello,World</p>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquid Glass Blog</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-color: #e0e5ec;
+            --text-primary: #4a5568;
+            --text-secondary: #718096;
+            --accent: #667eea;
+            --accent-glow: rgba(102, 126, 234, 0.3);
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --liquid-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* 动态液体背景 */
+        .liquid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .blob-1 {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            top: 50%;
+            right: -50px;
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            width: 350px;
+            height: 350px;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            bottom: -100px;
+            left: 30%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        /* 布局 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+        }
+
+        /* 侧边栏 - 拟态效果 */
+        .sidebar {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .profile-card {
+            background: var(--bg-color);
+            border-radius: 30px;
+            padding: 30px;
+            text-align: center;
+            /* 拟态凸起效果 */
+            box-shadow: 
+                20px 20px 60px var(--shadow-dark),
+                -20px -20px 60px var(--shadow-light);
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                25px 25px 70px var(--shadow-dark),
+                -25px -25px 70px var(--shadow-light);
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            background: var(--liquid-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            /* 内凹拟态 */
+            box-shadow: 
+                inset 5px 5px 10px rgba(0,0,0,0.1),
+                inset -5px -5px 10px rgba(255,255,255,0.3);
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .profile-bio {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        /* 导航菜单 */
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 15px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            /* 拟态扁平 */
+            background: var(--bg-color);
+            box-shadow: 
+                5px 5px 10px var(--shadow-dark),
+                -5px -5px 10px var(--shadow-light);
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent);
+            box-shadow: 
+                inset 5px 5px 10px var(--shadow-dark),
+                inset -5px -5px 10px var(--shadow-light);
+        }
+
+        .nav-link::before {
+            content: attr(data-icon);
+            font-size: 18px;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            min-height: 100vh;
+        }
+
+        /* 玻璃拟态卡片 */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 
+                0 8px 32px 0 rgba(31, 38, 135, 0.1),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 
+                0 20px 60px rgba(31, 38, 135, 0.15),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+        }
+
+        /* 水液玻璃效果标题 */
+        .liquid-title {
+            font-size: 48px;
+            font-weight: 800;
+            background: var(--liquid-bg);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .liquid-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--liquid-bg);
+            border-radius: 2px;
+            opacity: 0.3;
+        }
+
+        /* 文章列表 */
+        .post-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .post-item {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .post-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .post-item:hover::before {
+            left: 100%;
+        }
+
+        .post-item:hover {
+            background: rgba(255, 255, 255, 0.6);
+            transform: translateX(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .post-date {
+            font-size: 12px;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .post-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .post-excerpt {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .post-tags {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .tag {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        /* Markdown 内容样式 */
+        .markdown-body {
+            line-height: 1.8;
+            color: var(--text-primary);
+        }
+
+        .markdown-body h1 {
+            font-size: 36px;
+            margin-bottom: 30px;
+            color: var(--text-primary);
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .markdown-body h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: var(--liquid-bg);
+            border-radius: 2px;
+        }
+
+        .markdown-body h2 {
+            font-size: 28px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .markdown-body h3 {
+            font-size: 22px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        .markdown-body p {
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
+        .markdown-body code {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            color: var(--accent);
+        }
+
+        .markdown-body pre {
+            background: rgba(30, 30, 30, 0.05);
+            border-radius: 16px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .markdown-body pre code {
+            background: transparent;
+            color: var(--text-primary);
+            padding: 0;
+        }
+
+        .markdown-body blockquote {
+            border-left: 4px solid var(--accent);
+            padding-left: 20px;
+            margin: 20px 0;
+            color: var(--text-secondary);
+            font-style: italic;
+            background: rgba(102, 126, 234, 0.05);
+            padding: 20px 20px 20px 30px;
+            border-radius: 0 12px 12px 0;
+        }
+
+        .markdown-body img {
+            max-width: 100%;
+            border-radius: 16px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .markdown-body ul, .markdown-body ol {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .markdown-body li {
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+        }
+
+        .markdown-body a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            transition: border-color 0.3s;
+        }
+
+        .markdown-body a:hover {
+            border-bottom-color: var(--accent);
+        }
+
+        /* 返回按钮 */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.3);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.5);
+            transform: translateX(-5px);
+        }
+
+        /* 加载动画 */
+        .loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+
+        .loader-circle {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(102, 126, 234, 0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 文件上传区域 */
+        .upload-zone {
+            border: 2px dashed rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(255,255,255,0.2);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent);
+            background: rgba(255,255,255,0.4);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1.02);
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: relative;
+                top: 0;
+            }
+            
+            .liquid-title {
+                font-size: 32px;
+            }
+        }
+
+        /* 隐藏类 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 5px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- 液体背景 -->
+    <div class="liquid-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="profile-card">
+                <div class="avatar">✦</div>
+                <h1 class="profile-name">Liquid Blog</h1>
+                <p class="profile-bio">毛玻璃 · 拟态 · 水液玻璃</p>
+            </div>
+
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-icon="🏠" onclick="showHome()">首页文章</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-icon="📁" onclick="document.getElementById('fileInput').click()">本地Markdown</a>
+                        <input type="file" id="fileInput" accept=".md,.markdown,.txt" style="display: none;" onchange="handleFileSelect(event)">
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-icon="ℹ️" onclick="showAbout()">关于</a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- 主内容 -->
+        <main class="main-content">
+            <!-- 首页文章列表 -->
+            <div id="home-view" class="glass-card">
+                <h1 class="liquid-title">最新文章</h1>
+                <div class="post-list" id="post-list">
+                    <!-- 文章列表由JS生成 -->
+                </div>
+            </div>
+
+            <!-- 文章详情页 -->
+            <div id="post-view" class="glass-card hidden">
+                <button class="back-btn" onclick="showHome()">← 返回列表</button>
+                <article class="markdown-body" id="post-content">
+                    <!-- Markdown内容 -->
+                </article>
+            </div>
+
+            <!-- 关于页面 -->
+            <div id="about-view" class="glass-card hidden">
+                <h1 class="liquid-title">关于</h1>
+                <div class="markdown-body">
+                    <p>这是一个融合三种现代设计风格的静态博客：</p>
+                    <ul>
+                        <li><strong>毛玻璃效果 (Glassmorphism)</strong>：半透明背景配合背景模糊，创造层次感</li>
+                        <li><strong>拟态设计 (Neumorphism)</strong>：柔和的阴影和高光，创造触觉般的凸起和凹陷感</li>
+                        <li><strong>水液玻璃 (Liquid Glass)</strong>：流动的渐变背景，带来有机的生命力</li>
+                    </ul>
+                    <p>支持直接拖拽或选择本地 Markdown 文件进行预览。</p>
+                </div>
+            </div>
+
+            <!-- 本地文件预览 -->
+            <div id="local-view" class="glass-card hidden">
+                <button class="back-btn" onclick="showHome()">← 返回列表</button>
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                    <div style="font-size: 48px; margin-bottom: 15px;">📄</div>
+                    <h3 style="margin-bottom: 10px; color: var(--text-primary);">点击或拖拽 Markdown 文件</h3>
+                    <p style="color: var(--text-secondary); font-size: 14px;">支持 .md .markdown .txt 格式</p>
+                </div>
+                <article class="markdown-body hidden" id="local-content" style="margin-top: 30px;"></article>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 简单的 Markdown 解析器
+        class MarkdownParser {
+            static parse(text) {
+                // 转义HTML
+                text = text.replace(/&/g, '&amp;')
+                          .replace(/</g, '&lt;')
+                          .replace(/>/g, '&gt;');
+
+                // 代码块（必须在行内代码之前处理）
+                text = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+                    return `<pre><code>${code.trim()}</code></pre>`;
+                });
+
+                // 标题
+                text = text.replace(/^###### (.*$)/gim, '<h6>$1</h6>');
+                text = text.replace(/^##### (.*$)/gim, '<h5>$1</h5>');
+                text = text.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
+                text = text.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+                text = text.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+                text = text.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+                // 粗体和斜体
+                text = text.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+                text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                text = text.replace(/___(.*?)___/g, '<strong><em>$1</em></strong>');
+                text = text.replace(/__(.*?)__/g, '<strong>$1</strong>');
+                text = text.replace(/_(.*?)_/g, '<em>$1</em>');
+
+                // 行内代码
+                text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+                // 引用块
+                text = text.replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>');
+                text = text.replace(/(<blockquote>.*<\/blockquote>\n?)+/g, (match) => {
+                    return match.replace(/<\/blockquote>\n<blockquote>/g, '<br>');
+                });
+
+                // 链接
+                text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+                // 图片
+                text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+
+                // 无序列表
+                text = text.replace(/^\- (.*$)/gim, '<li>$1</li>');
+                text = text.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+                text = text.replace(/<\/ul>\n<ul>/g, '');
+
+                // 有序列表
+                text = text.replace(/^\d+\. (.*$)/gim, '<li>$1</li>');
+                text = text.replace(/(<li>.*<\/li>\n?)+/g, (match, offset, string) => {
+                    // 检查是否已经被包裹在ul中
+                    if (string.lastIndexOf('<ul>', offset) > string.lastIndexOf('</ul>', offset)) {
+                        return match;
+                    }
+                    return `<ol>${match}</ol>`;
+                });
+
+                // 分隔线
+                text = text.replace(/^---$/gim, '<hr>');
+
+                // 段落（最后处理）
+                text = text.split('\n\n').map(block => {
+                    if (!block.trim()) return '';
+                    if (block.startsWith('<')) return block;
+                    return `<p>${block.replace(/\n/g, '<br>')}</p>`;
+                }).join('\n');
+
+                return text;
+            }
+        }
+
+        // 示例文章数据
+        const posts = [
+            {
+                id: 1,
+                title: "探索玻璃拟态设计的艺术",
+                date: "2024-01-15",
+                excerpt: "玻璃拟态（Glassmorphism）通过背景模糊、半透明层级和鲜艳色彩，创造出富有深度和现代感的界面设计...",
+                tags: ["设计", "UI"],
+                content: `# 探索玻璃拟态设计的艺术
+
+玻璃拟态（Glassmorphism）是近年来最流行的设计趋势之一，其核心特征包括：
+
+## 核心特点
+
+- **透明度**：使用半透明背景（通常 rgba(255,255,255,0.25)）
+- **背景模糊**：backdrop-filter: blur(20px) 创造磨砂玻璃效果
+- **细微边框**：1px 的半透明白色边框增强玻璃感
+- **鲜艳背景**：需要色彩丰富的背景才能展现效果
+
+## 代码示例
+
+\`\`\`css
+.glass {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 24px;
+}
+\`\`\`
+
+> "好的设计是尽可能少的设计" —— Dieter Rams
+
+## 应用场景
+
+玻璃拟态特别适合：
+- 模态框和弹出层
+- 导航栏
+- 卡片式布局
+- 仪表盘界面
+
+![Glass Example](https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800)
+
+这种设计风格在 iOS、Windows 11 等现代操作系统中得到了广泛应用。`
+            },
+            {
+                id: 2,
+                title: "拟态设计：触觉数字体验",
+                date: "2024-01-10",
+                excerpt: "拟态（Neumorphism）通过柔和的阴影和高光，在扁平设计中创造出类似真实物体的触觉感受...",
+                tags: ["设计", "CSS"],
+                content: `# 拟态设计：触觉数字体验
+
+拟态设计（Neumorphism/Soft UI）是扁平化设计的演进，它通过光影创造出元素的物理感。
+
+## 光影原理
+
+拟态设计基于两个核心阴影：
+- **高光**（左上）：#ffffff
+- **阴影**（右下）：#a3b1c6
+
+## 凸起效果
+
+\`\`\`css
+.neumorphic-raised {
+    background: #e0e5ec;
+    border-radius: 20px;
+    box-shadow: 
+        20px 20px 60px #a3b1c6,
+        -20px -20px 60px #ffffff;
+}
+\`\`\`
+
+## 凹陷效果
+
+\`\`\`css
+.neumorphic-inset {
+    background: #e0e5ec;
+    border-radius: 20px;
+    box-shadow: 
+        inset 5px 5px 10px #a3b1c6,
+        inset -5px -5px 10px #ffffff;
+}
+\`\`\`
+
+## 最佳实践
+
+1. 背景色必须是中性灰（#e0e5ec 效果最佳）
+2. 对比度较低，不适合文字内容
+3. 适合按钮、卡片、开关等交互元素
+4. 阴影要柔和（60px 模糊半径）
+
+> 拟态设计创造了一种独特的"软质"美学，让人想伸手触摸屏幕。`
+            },
+            {
+                id: 3,
+                title: "水液动画：为界面注入生命",
+                date: "2024-01-05",
+                excerpt: "液体动画（Liquid Animation）使用流畅的有机运动，打破了几何图形的僵硬感，创造出更具生命力的交互体验...",
+                tags: ["动画", "WebGL"],
+                content: `# 水液动画：为界面注入生命
+
+液体动画模仿真实世界的流体动力学，为数字界面带来有机的运动感。
+
+## 技术实现
+
+### CSS 变形动画
+
+\`\`\`css
+.liquid-button {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    animation: morph 8s ease-in-out infinite;
+}
+
+@keyframes morph {
+    0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+    50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+}
+\`\`\`
+
+### SVG 滤镜
+
+使用 SVG gooey 效果创造粘连的液体感：
+
+\`\`\`html
+<filter id="goo">
+    <feGaussianBlur in="SourceGraphic" stdDeviation="10" />
+    <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" />
+</filter>
+\`\`\`
+
+## 应用场景
+
+- 页面过渡效果
+- 按钮悬停状态
+- 背景装饰元素
+- 加载动画
+
+> 液体动画让界面感觉更加自然和人性化，减少了数字世界的冰冷感。
+
+## 性能考虑
+
+液体动画通常涉及：
+- 频繁的重绘
+- 滤镜计算
+- 复杂的路径动画
+
+建议在非关键交互中使用，并始终提供 reduced-motion 替代方案。`
+            }
+        ];
+
+        // 视图切换
+        function hideAllViews() {
+            document.getElementById('home-view').classList.add('hidden');
+            document.getElementById('post-view').classList.add('hidden');
+            document.getElementById('about-view').classList.add('hidden');
+            document.getElementById('local-view').classList.add('hidden');
+            
+            // 更新导航状态
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+        }
+
+        function showHome() {
+            hideAllViews();
+            document.getElementById('home-view').classList.remove('hidden');
+            document.querySelectorAll('.nav-link')[0].classList.add('active');
+            renderPostList();
+        }
+
+        function showAbout() {
+            hideAllViews();
+            document.getElementById('about-view').classList.remove('hidden');
+            document.querySelectorAll('.nav-link')[2].classList.add('active');
+        }
+
+        function showLocal() {
+            hideAllViews();
+            document.getElementById('local-view').classList.remove('hidden');
+            document.querySelectorAll('.nav-link')[1].classList.add('active');
+        }
+
+        // 渲染文章列表
+        function renderPostList() {
+            const list = document.getElementById('post-list');
+            list.innerHTML = posts.map(post => `
+                <div class="post-item" onclick="showPost(${post.id})">
+                    <div class="post-date">${post.date}</div>
+                    <h3 class="post-title">${post.title}</h3>
+                    <p class="post-excerpt">${post.excerpt}</p>
+                    <div class="post-tags">
+                        ${post.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 显示文章详情
+        function showPost(id) {
+            const post = posts.find(p => p.id === id);
+            if (!post) return;
+
+            hideAllViews();
+            document.getElementById('post-view').classList.remove('hidden');
+            
+            const content = document.getElementById('post-content');
+            content.innerHTML = `<div class="loader"><div class="loader-circle"></div></div>`;
+            
+            // 模拟加载
+            setTimeout(() => {
+                content.innerHTML = MarkdownParser.parse(post.content);
+            }, 300);
+        }
+
+        // 文件处理
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                readFile(file);
+            }
+        }
+
+        function readFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target.result;
+                showLocal();
+                const contentDiv = document.getElementById('local-content');
+                const uploadZone = document.getElementById('uploadZone');
+                
+                uploadZone.classList.add('hidden');
+                contentDiv.classList.remove('hidden');
+                contentDiv.innerHTML = MarkdownParser.parse(content);
+            };
+            reader.readAsText(file);
+        }
+
+        // 拖拽支持
+        const uploadZone = document.getElementById('uploadZone');
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].name.match(/\.(md|markdown|txt)$/i)) {
+                readFile(files[0]);
+            } else {
+                alert('请上传 Markdown 文件 (.md, .markdown, .txt)');
+            }
+        });
+
+        // 初始化
+        renderPostList();
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                showHome();
+            }
+        });
+    </script>
+</body>
+</html>
