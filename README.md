@@ -20,7 +20,6 @@ You Will Found Some Thing Cool In Here.
 
 ### ✨ 特点
 
-- 🎨 **极简设计** — 以 `#007ba7` 为主色调，搭配清爽的视觉风格
 - 📱 **响应式布局** — 适配各种设备屏幕
 - ⚡ **静态部署** — 利用 GitHub Pages 快速加载
 
