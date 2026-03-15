@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>抽象SDF动画 · Shader移植</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>抽象SDF动画 · 移动端适配 · shader移植</title>
     <style>
         * {
             margin: 0;
@@ -13,45 +13,320 @@
         body {
             background: #000;
             overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: pan-y pinch-zoom; /* 保留垂直滚动和缩放，避免全部阻止 */
         }
         canvas {
             display: block;
             width: 100vw;
             height: 100vh;
+            touch-action: none; /* 防止触摸干扰画布交互，但我们需要通过JS处理 */
+        }
+
+        /* 齿轮按钮 - 触摸友好 */
+        .toggle-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: rgba(20,20,30,0.9);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 99;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .toggle-panel:hover {
+            background: rgba(40,40,50,0.95);
+            transform: scale(1.05);
+        }
+        .toggle-panel:active {
+            transform: scale(0.95);
+        }
+
+        /* 控制面板 - 触摸优化 */
+        .control-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            max-width: calc(100vw - 40px);
+            background: rgba(20, 20, 30, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 24px 20px;
+            color: #eee;
+            z-index: 100;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+            transition: opacity 0.3s, transform 0.3s;
+            max-height: 90vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* 流畅滚动 */
+            touch-action: pan-y; /* 允许垂直滚动 */
+        }
+        .control-panel.hidden {
+            opacity: 0;
+            transform: scale(0.9) translateX(20px);
+            pointer-events: none;
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            .control-panel {
+                width: calc(100vw - 40px);
+                left: 20px;
+                right: auto;
+                padding: 20px;
+            }
+            .toggle-panel {
+                width: 64px;
+                height: 64px;
+                font-size: 32px;
+                bottom: 30px;
+                top: auto;
+                right: 20px;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            }
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 12px;
+        }
+
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            min-height: 44px; /* 触摸高度 */
+        }
+        .control-label {
+            font-size: 15px;
+            color: #ccc;
+        }
+        .control-value {
+            font-family: monospace;
+            font-size: 14px;
+            color: #8ab4f8;
+            background: rgba(0,0,0,0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        input[type="number"], select {
+            width: 120px;
+            padding: 10px 12px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 30px;
+            color: #fff;
+            font-family: monospace;
+            font-size: 15px;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        /* 滑块 - 触摸优化 */
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            margin: 15px 0;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 28px;
+            height: 28px;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 2px solid #8ab4f8;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 28px;
+            height: 28px;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #8ab4f8;
+        }
+        /* 移动端滑块更大 */
+        @media (max-width: 768px) {
+            input[type="range"]::-webkit-slider-thumb {
+                width: 36px;
+                height: 36px;
+            }
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            margin-top: 20px;
+            background: linear-gradient(135deg, #2a6f97, #1e4e6f);
+            border: none;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid rgba(255,255,255,0.2);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:hover {
+            background: linear-gradient(135deg, #3282b0, #256a8f);
+            box-shadow: 0 0 20px rgba(50, 130, 176, 0.5);
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 3px;
+            margin: 20px 0 8px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #8ab4f8;
+            transition: width 0.2s;
+        }
+        .progress-text {
+            font-size: 13px;
+            text-align: center;
+            color: #aaa;
+        }
+
+        /* 关闭按钮 - 触摸友好 */
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 44px;
+            height: 44px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .close-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: rotate(90deg);
+        }
+        .close-btn:active {
+            transform: rotate(90deg) scale(0.9);
         }
     </style>
 </head>
 <body>
     <canvas id="glCanvas"></canvas>
 
+    <!-- 齿轮按钮 -->
+    <div class="toggle-panel" id="togglePanelBtn">⚙</div>
+
+    <!-- 控制面板 -->
+    <div class="control-panel" id="controlPanel">
+        <!-- 关闭按钮 -->
+        <div class="close-btn" id="closePanelBtn">×</div>
+        <div class="panel-title">视频导出设置</div>
+
+        <div class="control-row">
+            <span class="control-label">时长 (秒)</span>
+            <input type="number" id="duration" min="1" max="60" value="5" step="1">
+        </div>
+
+        <div class="control-row">
+            <span class="control-label">帧率 (fps)</span>
+            <select id="fps">
+                <option value="24">24</option>
+                <option value="30" selected>30</option>
+                <option value="60">60</option>
+                <option value="120">120</option>
+            </select>
+        </div>
+
+        <div class="control-row">
+            <span class="control-label">分辨率</span>
+            <select id="resolution">
+                <option value="1280x720">720p (1280x720)</option>
+                <option value="1920x1080" selected>1080p (1920x1080)</option>
+                <option value="2560x1440">2K (2560x1440)</option>
+                <option value="3840x2160">4K (3840x2160)</option>
+            </select>
+        </div>
+
+        <div class="control-row">
+            <span class="control-label">码率 (Mbps)</span>
+            <input type="number" id="bitrate" min="1" max="100" value="20" step="1">
+        </div>
+
+        <button class="btn" id="exportBtn">导出视频</button>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">就绪</div>
+    </div>
+
     <script>
         (function() {
+            // ==================== 原有 WebGL 代码 ====================
             const canvas = document.getElementById('glCanvas');
-            // 尝试获取 WebGL2 上下文，降级到 WebGL1 如果不可用
             let gl = canvas.getContext('webgl2') || canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
             if (!gl) {
                 alert('您的浏览器不支持 WebGL，请更换浏览器。');
                 return;
             }
 
-            // 顶点着色器：简单的全屏四边形
             const vsSource = `#version 100
                 attribute vec2 aPosition;
                 void main() {
                     gl_Position = vec4(aPosition, 0.0, 1.0);
                 }
             `;
-            // 对于 WebGL2 使用 version 300 es，但为了兼容我们使用 #version 100 也能工作
-            // 但片段着色器需要高精度，所以使用 #version 100 并声明精度即可
 
-            // 片段着色器：移植自 ShaderToy 代码
             const fsSource = `#version 100
                 precision highp float;
-                varying vec2 vUv; // 我们不需要 vUv，直接用 gl_FragCoord
                 uniform vec2 iResolution;
                 uniform float iTime;
 
-                // 宏定义
                 #define Rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
                 #define antialiasing(n) n/min(iResolution.y,iResolution.x)
                 #define S(d,b) smoothstep(antialiasing(1.0),b,d)
@@ -280,7 +555,6 @@
                     col = mix(col, vec3(0.), S(d5, 0.0));
                     col = mix(col, vec3(0.7), S(abs(d5) - 0.001, 0.0));
 
-                    // feather bg
                     p = prevP;
                     p *= Rot(radians(-5. * iTime));
                     p = DF(p, 4.0);
@@ -299,7 +573,6 @@
 
                     p = prevP;
 
-                    // feather bg
                     p *= Rot(radians(10. * iTime));
                     p = DF(p, 3.0);
                     p -= vec2(0.235);
@@ -316,7 +589,6 @@
                 }
             `;
 
-            // 编译着色器的辅助函数
             function compileShader(gl, source, type) {
                 const shader = gl.createShader(type);
                 gl.shaderSource(shader, source);
@@ -338,22 +610,9 @@
             gl.attachShader(program, vs);
             gl.attachShader(program, fs);
             gl.linkProgram(program);
-            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-                console.error(gl.getProgramInfoLog(program));
-                alert('程序链接失败');
-                return;
-            }
             gl.useProgram(program);
 
-            // 顶点数据：全屏三角形（覆盖两个三角形）
-            const vertices = new Float32Array([
-                -1, -1,
-                 1, -1,
-                -1,  1,
-                -1,  1,
-                 1, -1,
-                 1,  1
-            ]);
+            const vertices = new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]);
             const vertexBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
@@ -362,7 +621,6 @@
             gl.enableVertexAttribArray(aPosition);
             gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
 
-            // Uniforms
             const iResolutionLoc = gl.getUniformLocation(program, 'iResolution');
             const iTimeLoc = gl.getUniformLocation(program, 'iTime');
 
@@ -378,16 +636,138 @@
 
             function render() {
                 const time = (performance.now() / 1000) - startTime;
-
                 gl.uniform2f(iResolutionLoc, canvas.width, canvas.height);
                 gl.uniform1f(iTimeLoc, time);
-
                 gl.drawArrays(gl.TRIANGLES, 0, 6);
-
                 requestAnimationFrame(render);
             }
-
             render();
+
+            // ==================== 面板控制 ====================
+            const controlPanel = document.getElementById('controlPanel');
+            const toggleBtn = document.getElementById('togglePanelBtn');
+            const closeBtn = document.getElementById('closePanelBtn');
+
+            function togglePanel() {
+                controlPanel.classList.toggle('hidden');
+            }
+
+            toggleBtn.addEventListener('click', togglePanel);
+            closeBtn.addEventListener('click', togglePanel); // 关闭按钮同样触发隐藏
+
+            // 点击外部区域关闭面板？暂时不实现，留给用户自定义
+
+            // ==================== 导出功能 ====================
+            const exportBtn = document.getElementById('exportBtn');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            exportBtn.addEventListener('click', async () => {
+                const duration = parseFloat(document.getElementById('duration').value);
+                const fps = parseInt(document.getElementById('fps').value);
+                const resolution = document.getElementById('resolution').value;
+                const bitrate = parseInt(document.getElementById('bitrate').value) * 1000000; // Mbps to bps
+
+                const [width, height] = resolution.split('x').map(Number);
+
+                // 创建离屏canvas
+                const offCanvas = document.createElement('canvas');
+                offCanvas.width = width;
+                offCanvas.height = height;
+                const offGl = offCanvas.getContext('webgl2') || offCanvas.getContext('webgl');
+                if (!offGl) {
+                    alert('无法创建离屏WebGL上下文');
+                    return;
+                }
+
+                // 编译着色器到离屏上下文
+                const offVs = compileShader(offGl, vsSource, offGl.VERTEX_SHADER);
+                const offFs = compileShader(offGl, fsSource, offGl.FRAGMENT_SHADER);
+                if (!offVs || !offFs) return;
+
+                const offProgram = offGl.createProgram();
+                offGl.attachShader(offProgram, offVs);
+                offGl.attachShader(offProgram, offFs);
+                offGl.linkProgram(offProgram);
+                offGl.useProgram(offProgram);
+
+                const offPosBuffer = offGl.createBuffer();
+                offGl.bindBuffer(offGl.ARRAY_BUFFER, offPosBuffer);
+                offGl.bufferData(offGl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), offGl.STATIC_DRAW);
+                const offPosLoc = offGl.getAttribLocation(offProgram, 'aPosition');
+                offGl.enableVertexAttribArray(offPosLoc);
+                offGl.vertexAttribPointer(offPosLoc, 2, offGl.FLOAT, false, 0, 0);
+
+                const offResLoc = offGl.getUniformLocation(offProgram, 'iResolution');
+                const offTimeLoc = offGl.getUniformLocation(offProgram, 'iTime');
+
+                // 准备录制流
+                const stream = offCanvas.captureStream(fps);
+                const mimeTypes = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+                let selectedMime = '';
+                for (const t of mimeTypes) {
+                    if (MediaRecorder.isTypeSupported(t)) {
+                        selectedMime = t;
+                        break;
+                    }
+                }
+                if (!selectedMime) {
+                    alert('当前浏览器不支持视频录制');
+                    return;
+                }
+
+                const mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: selectedMime,
+                    videoBitsPerSecond: bitrate
+                });
+                const chunks = [];
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: selectedMime });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                    a.download = `SDF_Animation_${width}x${height}_${fps}fps_${duration}s.mp4`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    exportBtn.disabled = false;
+                    progressFill.style.width = '0%';
+                    progressText.textContent = '导出完成';
+                };
+
+                // 开始录制
+                exportBtn.disabled = true;
+                progressText.textContent = '准备中...';
+                mediaRecorder.start(100); // 每100ms触发数据
+
+                const totalFrames = Math.round(duration * fps);
+                let frame = 0;
+                const startExportTime = performance.now();
+
+                // 逐帧渲染
+                function renderFrame() {
+                    if (frame >= totalFrames) {
+                        mediaRecorder.stop();
+                        return;
+                    }
+
+                    const t = frame / fps; // 当前时间 (秒)
+                    offGl.viewport(0, 0, width, height);
+                    offGl.uniform2f(offResLoc, width, height);
+                    offGl.uniform1f(offTimeLoc, t);
+                    offGl.drawArrays(offGl.TRIANGLES, 0, 6);
+
+                    frame++;
+                    const progress = (frame / totalFrames) * 100;
+                    progressFill.style.width = progress + '%';
+                    progressText.textContent = `渲染中 ${frame}/${totalFrames} (${Math.round(progress)}%)`;
+
+                    requestAnimationFrame(renderFrame);
+                }
+
+                renderFrame();
+            });
         })();
     </script>
 </body>
